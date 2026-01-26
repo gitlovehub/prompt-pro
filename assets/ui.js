@@ -1,5 +1,36 @@
 // assets/ui.js
 
+function normalizeText(str = "") {
+    return str
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+}
+
+function highlightText(text, keyword) {
+    if (!keyword) return escapeHtml(text);
+
+    const normText = normalizeText(text);
+    const normKey = normalizeText(keyword);
+
+    let result = "";
+    let i = 0;
+
+    while (i < text.length) {
+        const slice = normalizeText(text.slice(i, i + normKey.length));
+        if (slice === normKey) {
+            result += `<mark class="bg-yellow-200 rounded px-0.5">${escapeHtml(
+                text.slice(i, i + normKey.length),
+            )}</mark>`;
+            i += normKey.length;
+        } else {
+            result += escapeHtml(text[i]);
+            i++;
+        }
+    }
+    return result;
+}
+
 export function showToast(toastEl, msg = "OK") {
     toastEl.textContent = msg;
     toastEl.classList.remove("hidden");
@@ -75,7 +106,12 @@ export function renderPrompts({ gridEl, emptyStateEl, list, isAdmin }) {
         data-text="${escapeHtml(p.prompt_text || "")}">
         <div class="flex items-start justify-between gap-3">
           <div class="min-w-0">
-            <h3 class="truncate text-sm font-extrabold">${escapeHtml(p.title || "Untitled")}</h3>
+            <h3 
+              data-field="title"
+              data-raw="${escapeHtml(p.title || "Untitled")}"
+              class="truncate text-sm font-extrabold">
+              ${escapeHtml(p.title || "Untitled")}
+            </h3>
             <div class="mt-1 flex items-center gap-2">
               ${badgeHtml(p.type)}
               <span class="text-xs text-slate-500">${updated ? "Updated: " + updated : ""}</span>
@@ -84,7 +120,12 @@ export function renderPrompts({ gridEl, emptyStateEl, list, isAdmin }) {
           <button class="rounded-xl px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50" data-action="view">View</button>
         </div>
 
-        <p class="mt-3 line-clamp-3 text-xs leading-5 text-slate-600">${escapeHtml(preview)}</p>
+        <p 
+          data-field="text"
+          data-raw="${escapeHtml(previewRaw)}"
+          class="mt-3 line-clamp-3 text-xs leading-5 text-slate-600">
+          ${escapeHtml(preview)}
+        </p>
 
         <div class="mt-4 flex items-center justify-between gap-2">
           <button
@@ -118,19 +159,63 @@ export function renderPrompts({ gridEl, emptyStateEl, list, isAdmin }) {
     gridEl.insertAdjacentHTML("beforeend", html);
 }
 
-export function applySearchFilter({ searchInputEl, filterTypeEl }) {
-    const q = (searchInputEl.value || "").toLowerCase().trim();
-    const t = (filterTypeEl.value || "all").toLowerCase();
+export function applySearchFilter({ searchInputEl }) {
+    const keyword = searchInputEl.value.trim();
+    if (!keyword) {
+        // reset: hiện tất cả + bỏ highlight
+        document.querySelectorAll(".prompt-card").forEach((card) => {
+            card.classList.remove("hidden");
+            const titleEl = card.querySelector("[data-field='title']");
+            const textEl = card.querySelector("[data-field='text']");
+            titleEl.textContent = titleEl.dataset.raw;
+            textEl.textContent = textEl.dataset.raw;
+        });
+        return;
+    }
+
+    const normKey = normalizeText(keyword);
+    const cards = [];
 
     document.querySelectorAll(".prompt-card").forEach((card) => {
-        const title = (card.dataset.title || "").toLowerCase();
-        const text = (card.dataset.text || "").toLowerCase();
-        const type = (card.dataset.type || "image").toLowerCase();
+        const titleEl = card.querySelector("[data-field='title']");
+        const textEl = card.querySelector("[data-field='text']");
 
-        const matchQ = !q || title.includes(q) || text.includes(q);
-        const matchT = t === "all" || type === t;
-        card.style.display = matchQ && matchT ? "" : "none";
+        const rawTitle = titleEl.dataset.raw;
+        const rawText = textEl.dataset.raw;
+
+        let score = 0;
+
+        // ===== TẦNG 1: MATCH NGUYÊN VĂN (GIỐNG CTRL+F) =====
+        if (rawTitle.includes(keyword) || rawText.includes(keyword)) {
+            score = 2;
+            titleEl.innerHTML = highlightText(rawTitle, keyword);
+            textEl.innerHTML = highlightText(rawText, keyword);
+        }
+        // ===== TẦNG 2: MATCH BỎ DẤU =====
+        else if (
+            normalizeText(rawTitle).includes(normKey) ||
+            normalizeText(rawText).includes(normKey)
+        ) {
+            score = 1;
+            titleEl.innerHTML = highlightText(rawTitle, keyword);
+            textEl.innerHTML = highlightText(rawText, keyword);
+        } else {
+            card.classList.add("hidden");
+            titleEl.textContent = rawTitle;
+            textEl.textContent = rawText;
+            return;
+        }
+
+        card.classList.remove("hidden");
+        cards.push({ card, score });
     });
+
+    // ===== ĐƯA CARD KHỚP LÊN ĐẦU (GIỐNG CTRL+F) =====
+    cards
+        .sort((a, b) => b.score - a.score)
+        .forEach(({ card }) => {
+            card.parentNode.appendChild(card);
+        });
 }
 
 export function openModalCreate({
