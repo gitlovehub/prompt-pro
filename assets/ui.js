@@ -159,33 +159,40 @@ export function renderPrompts({ gridEl, emptyStateEl, list, isAdmin }) {
     gridEl.insertAdjacentHTML("beforeend", html);
 }
 
-export function applySearchFilter({ searchInputEl }) {
+export function applySearchFilter({ searchInputEl, filterTypeEl }) {
     const keyword = searchInputEl.value.trim();
-    if (!keyword) {
-        // reset: hiện tất cả + bỏ highlight
-        document.querySelectorAll(".prompt-card").forEach((card) => {
-            card.classList.remove("hidden");
-            const titleEl = card.querySelector("[data-field='title']");
-            const textEl = card.querySelector("[data-field='text']");
-            titleEl.textContent = titleEl.dataset.raw;
-            textEl.textContent = textEl.dataset.raw;
-        });
-        return;
-    }
+    const selectedType = filterTypeEl?.value || "all";
 
     const normKey = normalizeText(keyword);
     const cards = [];
 
     document.querySelectorAll(".prompt-card").forEach((card) => {
+        const cardType = card.dataset.type; // image | motion
+
+        // ===== FILTER TYPE =====
+        if (selectedType !== "all" && cardType !== selectedType) {
+            card.classList.add("hidden");
+            return;
+        }
+
         const titleEl = card.querySelector("[data-field='title']");
         const textEl = card.querySelector("[data-field='text']");
 
         const rawTitle = titleEl.dataset.raw;
         const rawText = textEl.dataset.raw;
 
+        // ===== KHÔNG SEARCH → CHỈ FILTER TYPE =====
+        if (!keyword) {
+            titleEl.textContent = rawTitle;
+            textEl.textContent = rawText;
+            card.classList.remove("hidden");
+            cards.push({ card, score: 0 });
+            return;
+        }
+
         let score = 0;
 
-        // ===== TẦNG 1: MATCH NGUYÊN VĂN (GIỐNG CTRL+F) =====
+        // ===== TẦNG 1: MATCH CÓ DẤU (CTRL + F STYLE) =====
         if (rawTitle.includes(keyword) || rawText.includes(keyword)) {
             score = 2;
             titleEl.innerHTML = highlightText(rawTitle, keyword);
@@ -210,7 +217,7 @@ export function applySearchFilter({ searchInputEl }) {
         cards.push({ card, score });
     });
 
-    // ===== ĐƯA CARD KHỚP LÊN ĐẦU (GIỐNG CTRL+F) =====
+    // ===== ĐƯA CARD MATCH LÊN ĐẦU =====
     cards
         .sort((a, b) => b.score - a.score)
         .forEach(({ card }) => {
