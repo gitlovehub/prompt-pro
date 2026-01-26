@@ -97,7 +97,7 @@ export function renderPrompts({ gridEl, emptyStateEl, list, isAdmin }) {
               isAdmin
                   ? `
             <button
-              class="rounded-xl px-3 py-2 text-xs font-semibold text-green-700 ring-1 ring-green-200 hover:bg-green-50"
+              class="rounded-xl px-3 py-2 text-xs font-semibold text-indigo-700 ring-1 ring-indigo-200 hover:bg-indigo-50"
               data-action="edit">
               Edit
             </button>
