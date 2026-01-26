@@ -112,7 +112,7 @@ async function refreshAuthUI() {
     // ===== GUEST =====
     if (!sessionUser) {
         isAdmin = false;
-        authStatusEl.textContent = "Chưa đăng nhập";
+        authStatusEl.textContent = "only administrators can log in";
 
         authBox.classList.add("hidden");
         btnShowLogin.classList.remove("hidden");
