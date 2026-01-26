@@ -27,8 +27,8 @@ export function badgeHtml(type) {
     const t = (type || "image").toLowerCase();
     const motion = t === "motion";
     const cls = motion
-        ? "inline-flex items-center rounded-lg bg-emerald-50 px-2 py-0.5 text-[11px] font-bold text-emerald-700 ring-1 ring-emerald-200"
-        : "inline-flex items-center rounded-lg bg-blue-50 px-2 py-0.5 text-[11px] font-bold text-blue-700 ring-1 ring-blue-200";
+        ? "inline-flex items-center rounded-lg bg-amber-50 px-2 py-0.5 text-[11px] font-bold text-amber-700 ring-1 ring-amber-200"
+        : "inline-flex items-center rounded-lg bg-emerald-50 px-2 py-0.5 text-[11px] font-bold text-emerald-700 ring-1 ring-emerald-200";
     return `<span class="${cls}">${motion ? "MOTION" : "IMAGE"}</span>`;
 }
 
