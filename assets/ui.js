@@ -104,7 +104,7 @@ export function renderPrompts({ gridEl, emptyStateEl, list, isAdmin }) {
             <button
               class="rounded-xl px-3 py-2 text-xs font-semibold text-red-600 ring-1 ring-red-200 hover:bg-red-50"
               data-action="delete">
-              Delete
+              Remove
             </button>
           `
                   : ``
