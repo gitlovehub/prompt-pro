@@ -55,6 +55,7 @@ let sessionUser = null;
 let isAdmin = false;
 let prompts = [];
 let editingId = null;
+let originalPromptSnapshot = null;
 
 const lastCopiedAt = new Map(); // key: promptId, value: number (timestamp)
 const copyScore = new Map(); // key: promptId, value: number
@@ -175,6 +176,7 @@ btnLogout.addEventListener("click", async () => {
 
 closeViewModal.addEventListener("click", () => {
     viewModal.classList.add("hidden");
+    document.body.style.overflow = "auto";
 });
 
 viewModal.addEventListener("click", (e) => {
@@ -186,6 +188,8 @@ btnNew.addEventListener("click", () => {
     if (!isAdmin) return showToast(toastEl, "Only admin");
 
     editingId = null;
+    originalPromptSnapshot = null;
+
     openModalCreate({
         modalEl,
         headingEl: modalHeadingEl,
@@ -193,6 +197,7 @@ btnNew.addEventListener("click", () => {
         typeEl: modalTypeEl,
         textEl: modalTextEl,
     });
+    document.body.style.overflow = "hidden";
 });
 
 // ===== CARD ACTIONS =====
@@ -210,6 +215,7 @@ gridEl.addEventListener("click", async (e) => {
         viewTitle.textContent = card.dataset.title || "Prompt";
         viewContent.textContent = card.dataset.text || "";
         viewModal.classList.remove("hidden");
+        document.body.style.overflow = "hidden";
         return;
     }
 
@@ -245,6 +251,13 @@ gridEl.addEventListener("click", async (e) => {
         if (!p) return;
 
         editingId = id;
+
+        originalPromptSnapshot = {
+            title: p.title ?? "",
+            type: p.type ?? "",
+            prompt_text: p.prompt_text ?? "",
+        };
+
         openModalEdit({
             modalEl,
             headingEl: modalHeadingEl,
@@ -253,6 +266,7 @@ gridEl.addEventListener("click", async (e) => {
             textEl: modalTextEl,
             prompt: p,
         });
+        document.body.style.overflow = "hidden";
     }
 
     if (action === "delete") {
@@ -266,10 +280,21 @@ gridEl.addEventListener("click", async (e) => {
 });
 
 // ===== MODAL =====
-closeModalBtn.addEventListener("click", () => closeModal(modalEl));
-cancelModalBtn.addEventListener("click", () => closeModal(modalEl));
+closeModalBtn.addEventListener("click", () => {
+    closeModal(modalEl);
+    document.body.style.overflow = "auto";
+});
+
+cancelModalBtn.addEventListener("click", () => {
+    closeModal(modalEl);
+    document.body.style.overflow = "auto";
+});
+
 modalEl.addEventListener("click", (e) => {
-    if (e.target === modalEl) closeModal(modalEl);
+    if (e.target === modalEl) {
+        closeModal(modalEl);
+        document.body.style.overflow = "auto";
+    }
 });
 
 saveModalBtn.addEventListener("click", async () => {
@@ -279,8 +304,21 @@ saveModalBtn.addEventListener("click", async () => {
     const type = modalTypeEl.value;
     const prompt_text = modalTextEl.value.trim();
 
+    // ===== CHECK KHÔNG CÓ THAY ĐỔI (CHỈ ÁP DỤNG KHI EDIT) =====
+    if (editingId && originalPromptSnapshot) {
+        const isChanged =
+            title !== originalPromptSnapshot.title ||
+            type !== originalPromptSnapshot.type ||
+            prompt_text !== originalPromptSnapshot.prompt_text;
+
+        if (!isChanged) {
+            showToast(toastEl, "No changes to save");
+            return;
+        }
+    }
+
     if (!title || !prompt_text) {
-        return showToast(toastEl, "Thiếu title/prompt");
+        return showToast(toastEl, "Title and prompt are required");
     }
 
     const payload = { title, type, prompt_text };
@@ -294,6 +332,7 @@ saveModalBtn.addEventListener("click", async () => {
     }
 
     closeModal(modalEl);
+    document.body.style.overflow = "auto";
     await loadPrompts();
 });
 
