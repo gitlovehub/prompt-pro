@@ -270,10 +270,10 @@ gridEl.addEventListener("click", async (e) => {
     }
 
     if (action === "delete") {
-        if (!confirm("Xoá prompt này?")) return;
+        if (!confirm("Do you want to remove this Prompt?")) return;
         const { error } = await supabase.from("prompts").delete().eq("id", id);
         if (!error) {
-            showToast(toastEl, "Deleted ✅");
+            showToast(toastEl, "Removed ✅");
             await loadPrompts();
         }
     }
