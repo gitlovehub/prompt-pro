@@ -25,16 +25,14 @@ const toastEl = document.getElementById("toast");
 const searchInputEl = document.getElementById("searchInput");
 const filterTypeEl = document.getElementById("filterType");
 
-const authBox = document.getElementById("authBox");
 const btnLogin = document.getElementById("btnLogin");
 const btnLogout = document.getElementById("btnLogout");
 const btnShowLogin = document.getElementById("btnShowLogin");
 const btnNew = document.getElementById("btnNew");
+const loginForm = document.getElementById("loginForm");
 
-const authStatusEl = document.getElementById("authStatus");
 const emailEl = document.getElementById("email");
 const passEl = document.getElementById("password");
-const loginForm = document.getElementById("loginForm");
 
 const modalEl = document.getElementById("modal");
 const modalHeadingEl = document.getElementById("modalHeading");
@@ -49,6 +47,12 @@ const viewModal = document.getElementById("viewModal");
 const viewTitle = document.getElementById("viewTitle");
 const viewContent = document.getElementById("viewContent");
 const closeViewModal = document.getElementById("closeViewModal");
+
+const loginModal = document.getElementById("loginModal");
+const loginOverlay = document.getElementById("loginOverlay");
+const loginBox = document.getElementById("loginBox");
+const closeLoginModal = document.getElementById("closeLoginModal");
+const btnTop = document.getElementById("btnTop");
 
 // ===== STATE =====
 let sessionUser = null;
@@ -113,9 +117,7 @@ async function refreshAuthUI() {
     // ===== GUEST =====
     if (!sessionUser) {
         isAdmin = false;
-        authStatusEl.textContent = "Only administrators can log in.";
 
-        authBox.classList.add("hidden");
         btnShowLogin.classList.remove("hidden");
         btnLogout.classList.add("hidden");
         btnNew.classList.add("hidden");
@@ -126,9 +128,7 @@ async function refreshAuthUI() {
 
     // ===== LOGGED IN =====
     isAdmin = sessionUser.id === ADMIN_UID;
-    authStatusEl.textContent = `Đã đăng nhập: ${sessionUser.email}`;
 
-    authBox.classList.add("hidden");
     btnShowLogin.classList.add("hidden");
     btnLogout.classList.remove("hidden");
     btnNew.classList.toggle("hidden", !isAdmin);
@@ -137,13 +137,19 @@ async function refreshAuthUI() {
 }
 
 // ===== EVENTS =====
-loginForm?.addEventListener("submit", (e) => {
-    e.preventDefault();
-    btnLogin.click();
+loginForm?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  btnLogin.click();
 });
 
 btnShowLogin.addEventListener("click", () => {
-    authBox.classList.toggle("hidden");
+    loginModal.classList.remove("hidden");
+    document.body.style.overflow = "hidden";
+
+    requestAnimationFrame(() => {
+        loginOverlay.classList.remove("opacity-0");
+        loginBox.classList.remove("opacity-0", "scale-95", "translate-y-6");
+    });
 });
 
 btnLogin.addEventListener("click", async () => {
@@ -164,6 +170,7 @@ btnLogin.addEventListener("click", async () => {
     }
 
     showToast(toastEl, "Logged in ✅");
+    closeLogin();
     await refreshAuthUI();
 });
 
@@ -172,6 +179,21 @@ btnLogout.addEventListener("click", async () => {
     showToast(toastEl, "Logged out");
     await refreshAuthUI();
     location.reload();
+});
+
+function closeLogin() {
+    loginOverlay.classList.add("opacity-0");
+    loginBox.classList.add("opacity-0", "scale-95", "translate-y-6");
+
+    setTimeout(() => {
+        loginModal.classList.add("hidden");
+        document.body.style.overflow = "auto";
+    }, 300);
+}
+
+closeLoginModal.addEventListener("click", closeLogin);
+loginModal.addEventListener("click", (e) => {
+    if (e.target === loginModal) closeLogin();
 });
 
 closeViewModal.addEventListener("click", () => {
@@ -334,6 +356,10 @@ saveModalBtn.addEventListener("click", async () => {
     closeModal(modalEl);
     document.body.style.overflow = "auto";
     await loadPrompts();
+});
+
+window.addEventListener("scroll", () => {
+  btnTop.classList.toggle("hidden", window.scrollY < 300);
 });
 
 // ===== SEARCH =====
