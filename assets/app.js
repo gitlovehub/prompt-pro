@@ -25,6 +25,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const gridEl = document.getElementById("grid");
 const emptyStateEl = document.getElementById("emptyState");
 const toastEl = document.getElementById("toast");
+const helloUser = document.getElementById("helloUser");
 
 const searchInputEl = document.getElementById("searchInput");
 const filterTypeEl = document.getElementById("filterType");
@@ -144,6 +145,8 @@ async function refreshAuthUI() {
             btnShowLogin.classList.remove("hidden");
             btnLogout.classList.add("hidden");
             btnNew.classList.add("hidden");
+            helloUser.classList.add("hidden");
+            helloUser.textContent = "";
 
             pricingSection.classList.remove("hidden");
             gridEl.innerHTML = "";
@@ -160,6 +163,9 @@ async function refreshAuthUI() {
             .select("plan, role, locked_before")
             .eq("id", sessionUser.id)
             .maybeSingle();
+
+        helloUser.textContent = `Hi, ${sessionUser.email}`;
+        helloUser.classList.remove("hidden");
 
         if (error) {
             console.error("Profile error:", error);
@@ -248,6 +254,8 @@ btnLogin.addEventListener("click", async () => {
 
 btnLogout.addEventListener("click", async () => {
     await supabase.auth.signOut();
+    helloUser.classList.add("hidden");
+    helloUser.textContent = "";
     showToast(toastEl, "Logged out");
     await refreshAuthUI();
 });
