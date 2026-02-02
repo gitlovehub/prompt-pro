@@ -47,7 +47,8 @@ const dom = {
     grid: document.getElementById("grid"),
     emptyState: document.getElementById("emptyState"),
     toast: document.getElementById("toast"),
-    helloUser: document.getElementById("helloUser"),
+    searchBar: document.getElementById("searchBar"),
+    planBadge: document.getElementById("planBadge"),
     searchInput: document.getElementById("searchInput"),
     filterType: document.getElementById("filterType"),
     btnLogin: document.getElementById("btnLogin"),
@@ -89,7 +90,7 @@ async function loadPrompts() {
             .eq("user_id", state.user.id)
             .order("original_created_at", { ascending: false });
     }
-    // 🔓 Lifetime / Admin: realtime
+    // 🔓 ultimate / Admin: realtime
     else {
         query = state.supabase
             .from("prompts")
@@ -175,8 +176,9 @@ function resetGuestUI() {
     dom.btnShowLogin.classList.remove("hidden");
     dom.btnLogout.classList.add("hidden");
     dom.btnNew.classList.add("hidden");
-    dom.helloUser.classList.add("hidden");
+    dom.planBadge?.classList.add("hidden");
     dom.pricingSection.classList.remove("hidden");
+    dom.searchBar.classList.add("hidden");
     dom.grid.innerHTML = "";
 }
 
@@ -190,29 +192,7 @@ async function handleLoggedInUser() {
         .eq("id", state.user.id)
         .maybeSingle();
 
-    if (state.isAdmin) {
-        dom.helloUser.classList.add("hidden");
-        return;
-    } else {
-        let badge = "";
-    
-        if (state.userPlan === "pro") {
-            badge = `<span class="ml-2 rounded-md bg-blue-600 px-2 py-0.5 text-[11px] font-bold text-white">PRO</span>`;
-        }
-    
-        if (state.userPlan === "lifetime") {
-            badge = `<span class="ml-2 rounded-md bg-emerald-600 px-2 py-0.5 text-[11px] font-bold text-white">LIFETIME</span>`;
-        }
-    
-        dom.helloUser.innerHTML = `
-        <span class="flex items-center">
-            <span><span class="text-red-500">Hi,</span> ${state.user.email}</span>
-            ${badge}
-        </span>
-        `;
-        dom.helloUser.classList.remove("hidden");
-    }
-
+    // ---- SET STATE TRƯỚC ----
     if (error || !profile) {
         state.userPlan = "free";
         state.isAdmin = false;
@@ -222,6 +202,26 @@ async function handleLoggedInUser() {
         state.isAdmin = profile.role === "admin";
     }
 
+    // ---- PLAN BADGE ----
+    dom.planBadge.classList.add("hidden");
+
+    if (!state.isAdmin) {
+        if (state.userPlan === "pro") {
+            dom.planBadge.textContent = "PRO";
+            dom.planBadge.className =
+                "inline-flex items-center rounded-md bg-blue-100 px-2 py-1 text-sm font-medium text-blue-700 inset-ring inset-ring-blue-700/10";
+            dom.planBadge.classList.remove("hidden");
+        }
+
+        if (state.userPlan === "ultimate") {
+            dom.planBadge.textContent = "ULTIMATE";
+            dom.planBadge.className =
+                "inline-flex items-center rounded-md bg-emerald-100 px-2 py-1 text-sm font-medium text-emerald-700 inset-ring inset-ring-emerald-700/10";
+            dom.planBadge.classList.remove("hidden");
+        }
+    }
+
+    // ---- ADMIN UI ----
     dom.btnNew.classList.toggle("hidden", !state.isAdmin);
 
     if (state.userPlan === "free") {
@@ -230,7 +230,7 @@ async function handleLoggedInUser() {
         return;
     }
 
-    // 🧊 Pro: nếu chưa có bản copy thì tạo
+    // ---- PRO COPY LOGIC ----
     if (state.userPlan === "pro") {
         const { count } = await state.supabase
             .from("prompts_copy")
@@ -238,8 +238,6 @@ async function handleLoggedInUser() {
             .eq("user_id", state.user.id);
 
         if (count === 0) {
-            showToast(dom.toast, "Đang tạo bản cứng cho Pro...");
-
             const { data: prompts } = await state.supabase
                 .from("prompts")
                 .select("id, title, type, prompt_text, created_at");
@@ -254,20 +252,12 @@ async function handleLoggedInUser() {
                     original_created_at: p.created_at,
                 }));
 
-                const { error } = await state.supabase
-                    .from("prompts_copy")
-                    .insert(copies);
-
-                if (error) {
-                    console.error(error);
-                    showToast(dom.toast, "Tạo bản cứng thất bại");
-                } else {
-                    showToast(dom.toast, "Bản cứng Pro đã sẵn sàng");
-                }
+                await state.supabase.from("prompts_copy").insert(copies);
             }
         }
     }
 
+    dom.searchBar.classList.remove("hidden");
     dom.pricingSection.classList.add("hidden");
     await loadPrompts();
 }
@@ -466,7 +456,7 @@ async function handleCardAction(e) {
         if (state.userPlan === "free") {
             showToast(
                 dom.toast,
-                "Gói Free không hỗ trợ copy. Nâng cấp Pro hoặc Lifetime nhé!",
+                "Gói Free không hỗ trợ copy. Nâng cấp Pro hoặc ultimate nhé!",
             );
             return;
         }

@@ -27,8 +27,7 @@
 
                 <!-- Auth -->
                 <div class="flex items-center gap-3">
-                    <!-- Hello user -->
-                    <span id="helloUser" class="hidden text-sm font-semibold text-slate-700"></span>
+                    <span id="planBadge" class="inline-flex items-center rounded-md bg-blue-100 px-2 py-1 text-normal font-medium text-blue-700 inset-ring inset-ring-blue-700/10"></span>
 
                     <button id="btnShowLogin"
                         class="rounded-xl bg-slate-900 px-3 py-2 text-sm uppercase font-bold text-white hover:bg-slate-800">
@@ -47,7 +46,7 @@
     <main class="mx-auto max-w-6xl mt-10 px-4 py-6">
 
         <!-- Controls -->
-        <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div id="searchBar" class="hidden flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div class="flex flex-1 items-center gap-2">
                 <div class="relative w-full">
                     <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">🔎</span>
@@ -132,10 +131,10 @@
                     </a>
                 </div>
 
-                <!-- LIFETIME -->
+                <!-- ULTIMATE -->
                 <div class="rounded-2xl border border-emerald-500 bg-emerald-50 p-6 text-center">
                     <h3 class="mb-2 text-lg font-semibold text-emerald-700">
-                        Lifetime
+                        Ultimate
                     </h3>
                     <p class="mb-4 text-sm text-emerald-600">
                         Mua 1 lần – dùng trọn đời
@@ -153,7 +152,7 @@
 
                     <a href="mailto:hungtd010302@gmail.com"
                         class="block w-full rounded-xl bg-emerald-600 py-2 text-sm font-medium text-white hover:bg-emerald-700">
-                        Mua Lifetime
+                        Mua Ultimate
                     </a>
                 </div>
             </div>
@@ -279,7 +278,12 @@
         </div>
     </div>
 
-    <a href="#top" id="btnTop"
+    <footer class="border-t border-slate-200 py-2 text-center text-sm text-slate-500">
+        Made with ❤️ by <span class="font-semibold text-slate-700">Trần Đức Hưng</span>
+    </footer>
+
+
+    <a href="#" id="btnTop"
         class="fixed hidden bottom-6 right-6 z-[999] grid h-12 w-12 place-items-center rounded-full shadow-lg hover:bg-slate-800 active:translate-y-px">
         <svg viewBox="0 0 1024 1024" width="24px" class="icon" xmlns="http://www.w3.org/2000/svg" fill="#000000">
             <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
