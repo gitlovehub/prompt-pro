@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="vi" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pricing Page</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="assets/styles.css" />
+</head>
+
+<body class="min-h-screen bg-slate-50 text-slate-900" style="background: rgb(227, 239, 250);">
+    <a id="top"></a>
+
+    <!-- Top bar -->
+    <header class="sticky top-8 z-50">
+        <div class="mx-auto max-w-7xl px-4">
+            <div class="flex items-center justify-between rounded-2xl bg-white px-5 py-5 shadow-lg shadow-slate-200/70">
+
+                <!-- Logo -->
+                <a href="/" class="flex items-center gap-3">
+                    <div class="grid h-9 w-9 place-items-center rounded-lg bg-blue-600 text-white font-bold">
+                        ✓
+                    </div>
+                    <span class="text-lg font-extrabold">AI prompts easy for everyone</span>
+                </a>
+
+                <a href="/index.html"
+                    class="rounded-xl bg-slate-500 px-3 py-2 text-sm uppercase font-bold text-white hover:bg-slate-400">
+                    BACK
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="mx-auto max-w-6xl mt-10 px-4 py-6">
+        <section id="pricingSection" class="mx-auto max-w-5xl px-4 pt-8">
+            <h2 class="mb-3 text-center text-3xl font-bold">
+                Chọn gói truy cập Prompt
+            </h2>
+            <p class="mb-12 text-center text-slate-500">
+                Chỉ trả tiền 1 lần – dùng trọn bộ prompt chất lượng cao
+            </p>
+
+            <div class="grid gap-6 md:grid-cols-3">
+                <!-- FREE -->
+                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-6 text-center opacity-70">
+                    <h3 class="mb-2 text-lg font-semibold">👻 Free</h3>
+                    <p class="mb-4 text-sm text-slate-500">Dùng thử</p>
+
+                    <div class="mb-6 text-3xl font-bold">0₫</div>
+
+                    <ul class="mb-6 space-y-2 text-sm text-slate-600">
+                        <li>❌ Không xem prompt</li>
+                        <li>❌ Không copy</li>
+                        <li>❌ Không cập nhật</li>
+                    </ul>
+
+                    <button disabled
+                        class="w-full cursor-not-allowed rounded-xl bg-slate-300 py-2 text-sm font-medium text-white">
+                        Đã bị khóa
+                    </button>
+                </div>
+
+                <!-- PRO -->
+                <div class="relative rounded-2xl border border-indigo-500 bg-white p-6 text-center shadow-lg">
+                    <div
+                        class="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-indigo-500 px-3 py-1 text-xs font-semibold text-white">
+                        Phổ biến
+                    </div>
+
+                    <h3 class="mb-2 text-lg font-semibold">🎯 Pro</h3>
+                    <p class="mb-4 text-sm text-slate-500">Truy cập đầy đủ</p>
+
+                    <div class="mb-6 text-3xl font-bold">
+                        199k
+                    </div>
+
+                    <ul class="mb-6 space-y-2 text-sm text-slate-600">
+                        <li>✅ Xem toàn bộ prompt</li>
+                        <li>✅ Copy không giới hạn</li>
+                        <li>❌ Không cập nhật vĩnh viễn</li>
+                    </ul>
+
+                    <a href="mailto:hungtd010302@gmail.com"
+                        class="block w-full rounded-xl bg-indigo-500 py-2 text-sm font-medium text-white hover:bg-indigo-600">
+                        Liên hệ mua
+                    </a>
+                </div>
+
+                <!-- ULTIMATE -->
+                <div class="rounded-2xl border border-emerald-500 bg-emerald-50 p-6 text-center">
+                    <h3 class="mb-2 text-lg font-semibold text-emerald-700">
+                        🚀 Ultimate
+                    </h3>
+                    <p class="mb-4 text-sm text-emerald-600">
+                        Mua 1 lần – dùng trọn đời
+                    </p>
+
+                    <div class="mb-6 text-3xl font-bold text-emerald-700">
+                        299k
+                    </div>
+
+                    <ul class="mb-6 space-y-2 text-sm text-emerald-700">
+                        <li>✅ Full prompt ảnh + chuyển động</li>
+                        <li>✅ Copy không giới hạn</li>
+                        <li>✅ Update prompt mới mãi mãi</li>
+                    </ul>
+
+                    <a href="mailto:hungtd010302@gmail.com"
+                        class="block w-full rounded-xl bg-emerald-600 py-2 text-sm font-medium text-white hover:bg-emerald-700">
+                        Mua Ultimate
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+</body>
+
+</html>

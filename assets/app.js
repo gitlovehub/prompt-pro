@@ -76,6 +76,7 @@ const dom = {
     loginForm: document.getElementById("loginForm"),
     emailInput: document.getElementById("email"),
     passwordInput: document.getElementById("password"),
+    pricingLink: document.getElementById("pricingLink"),
 };
 
 // ========================= DATA LAYER =========================
@@ -190,6 +191,7 @@ function resetGuestUI() {
     dom.planBadge?.classList.add("hidden");
     dom.pricingSection.classList.remove("hidden");
     dom.searchBar.classList.add("hidden");
+    dom.pricingLink?.classList.add("hidden");
     dom.grid.innerHTML = "";
 }
 
@@ -223,16 +225,20 @@ async function handleLoggedInUser() {
                 "inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-sm font-medium text-slate-600 inset-ring inset-ring-slate-600/10";
             dom.planBadge.classList.remove("hidden");
         } else if (state.userPlan === "pro") {
+            dom.pricingLink?.classList.remove("hidden");
             dom.planBadge.textContent = "Pro";
             dom.planBadge.className =
                 "inline-flex items-center rounded-md bg-blue-100 px-2 py-1 text-sm font-medium text-blue-700 inset-ring inset-ring-blue-700/10";
             dom.planBadge.classList.remove("hidden");
         } else if (state.userPlan === "ultimate") {
+            dom.pricingLink?.classList.add("hidden");
             dom.planBadge.textContent = "Ultimate";
             dom.planBadge.className =
                 "inline-flex items-center rounded-md bg-emerald-100 px-2 py-1 text-sm font-medium text-emerald-700 inset-ring inset-ring-emerald-700/10";
             dom.planBadge.classList.remove("hidden");
         }
+    } else {
+        dom.pricingLink?.classList.remove("hidden");
     }
 
     // ---- ADMIN UI ----
