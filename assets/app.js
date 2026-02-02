@@ -1,4 +1,14 @@
 // assets/app.js
+/**
+ * Prompt Library App – Refactored & Optimized (2026 edition)
+ * - Single responsibility principle
+ * - Clear separation of concerns (config, state, auth, data, ui, events)
+ * - Reduced global pollution
+ * - Better error handling & loading states
+ * - More maintainable & scalable structure
+ * - No logic duplication
+ */
+
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
     showToast,
@@ -10,299 +20,431 @@ import {
     closeModal,
 } from "./ui.js";
 
-let userPlan = "free";
-let authRefreshing = false;
-let proLockedBefore = null;
+// ========================= CONFIG =========================
+const CONFIG = {
+    SUPABASE_URL: "https://nwzoeapjzsugdtohcfyx.supabase.co",
+    SUPABASE_ANON_KEY: "sb_publishable_TsL3PRhhpmnVjme70W7wwg_cC4lWs8K",
+    ADMIN_UID: "154151c6-65f5-45b6-8169-378d14c1ba94",
+};
 
-// ===== CONFIG =====
-const SUPABASE_URL = "https://nwzoeapjzsugdtohcfyx.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_TsL3PRhhpmnVjme70W7wwg_cC4lWs8K";
-const ADMIN_UID = "154151c6-65f5-45b6-8169-378d14c1ba94";
+// ========================= STATE =========================
+const state = {
+    supabase: createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY),
+    user: null,
+    isAdmin: false,
+    userPlan: "free",
+    prompts: [], // current filtered list
+    defaultPrompts: [], // original order snapshot for fallback sort
+    editingId: null,
+    originalPromptSnapshot: null,
+    copyScore: new Map(), // session-only popularity
+    lastCopiedAt: new Map(),
+    authRefreshing: false,
+};
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// ========================= DOM CACHE =========================
+const dom = {
+    grid: document.getElementById("grid"),
+    emptyState: document.getElementById("emptyState"),
+    toast: document.getElementById("toast"),
+    helloUser: document.getElementById("helloUser"),
+    searchInput: document.getElementById("searchInput"),
+    filterType: document.getElementById("filterType"),
+    btnLogin: document.getElementById("btnLogin"),
+    btnLogout: document.getElementById("btnLogout"),
+    btnShowLogin: document.getElementById("btnShowLogin"),
+    btnNew: document.getElementById("btnNew"),
+    loginModal: document.getElementById("loginModal"),
+    loginOverlay: document.getElementById("loginOverlay"),
+    loginBox: document.getElementById("loginBox"),
+    closeLoginModal: document.getElementById("closeLoginModal"),
+    modal: document.getElementById("modal"),
+    modalHeading: document.getElementById("modalHeading"),
+    modalTitle: document.getElementById("modalTitle"),
+    modalType: document.getElementById("modalType"),
+    modalText: document.getElementById("modalText"),
+    saveModal: document.getElementById("saveModal"),
+    closeModal: document.getElementById("closeModal"),
+    cancelModal: document.getElementById("cancelModal"),
+    viewModal: document.getElementById("viewModal"),
+    viewTitle: document.getElementById("viewTitle"),
+    viewContent: document.getElementById("viewContent"),
+    closeViewModal: document.getElementById("closeViewModal"),
+    btnTop: document.getElementById("btnTop"),
+    pricingSection: document.getElementById("pricingSection"),
+    loginForm: document.getElementById("loginForm"),
+    emailInput: document.getElementById("email"),
+    passwordInput: document.getElementById("password"),
+};
 
-// ===== DOM =====
-const gridEl = document.getElementById("grid");
-const emptyStateEl = document.getElementById("emptyState");
-const toastEl = document.getElementById("toast");
-const helloUser = document.getElementById("helloUser");
-
-const searchInputEl = document.getElementById("searchInput");
-const filterTypeEl = document.getElementById("filterType");
-
-const btnLogin = document.getElementById("btnLogin");
-const btnLogout = document.getElementById("btnLogout");
-const btnShowLogin = document.getElementById("btnShowLogin");
-const btnNew = document.getElementById("btnNew");
-const loginForm = document.getElementById("loginForm");
-
-const emailEl = document.getElementById("email");
-const passEl = document.getElementById("password");
-
-const modalEl = document.getElementById("modal");
-const modalHeadingEl = document.getElementById("modalHeading");
-const modalTitleEl = document.getElementById("modalTitle");
-const modalTypeEl = document.getElementById("modalType");
-const modalTextEl = document.getElementById("modalText");
-const saveModalBtn = document.getElementById("saveModal");
-const closeModalBtn = document.getElementById("closeModal");
-const cancelModalBtn = document.getElementById("cancelModal");
-
-const viewModal = document.getElementById("viewModal");
-const viewTitle = document.getElementById("viewTitle");
-const viewContent = document.getElementById("viewContent");
-const closeViewModal = document.getElementById("closeViewModal");
-
-const loginModal = document.getElementById("loginModal");
-const loginOverlay = document.getElementById("loginOverlay");
-const loginBox = document.getElementById("loginBox");
-const closeLoginModal = document.getElementById("closeLoginModal");
-const btnTop = document.getElementById("btnTop");
-const pricingSection = document.getElementById("pricingSection");
-
-// ===== STATE =====
-let sessionUser = null;
-let isAdmin = false;
-let prompts = [];
-let editingId = null;
-let originalPromptSnapshot = null;
-
-const lastCopiedAt = new Map(); // key: promptId, value: number (timestamp)
-const copyScore = new Map(); // key: promptId, value: number
-let defaultPrompts = []; // lưu list gốc theo DB
-
-// ===== LOAD PROMPTS =====
+// ========================= DATA LAYER =========================
 async function loadPrompts() {
-    let query = supabase.from("prompts").select("*");
+    let query;
 
-    // ===== CHẶN PRO KHÔNG XEM PROMPT MỚI =====
-    if (!isAdmin && userPlan === "pro" && proLockedBefore) {
-        query = query.lte("updated_at", proLockedBefore);
+    // 🔒 Pro: load bản cứng
+    if (state.userPlan === "pro") {
+        query = state.supabase
+            .from("prompts_copy")
+            .select("*")
+            .eq("user_id", state.user.id)
+            .order("original_created_at", { ascending: false });
+    }
+    // 🔓 Lifetime / Admin: realtime
+    else {
+        query = state.supabase
+            .from("prompts")
+            .select("*")
+            .order("updated_at", { ascending: false });
     }
 
-    const { data, error } = await query.order("updated_at", {
-        ascending: false,
-    });
+    const { data, error } = await query;
 
     if (error) {
-        console.error(error);
-        showToast(toastEl, "Load failed");
+        console.error("loadPrompts error:", error);
+        showToast(dom.toast, "Failed to load prompts");
         return;
     }
 
-    prompts = data || [];
-    defaultPrompts = [...prompts];
+    state.prompts = data || [];
+    state.defaultPrompts = [...state.prompts];
 
-    renderPrompts({ gridEl, emptyStateEl, list: getSortedPrompts(), isAdmin });
-    applySearchFilter({ searchInputEl, filterTypeEl });
+    renderPrompts({
+        gridEl: dom.grid,
+        emptyStateEl: dom.emptyState,
+        list: getSortedPrompts(),
+        isAdmin: state.isAdmin,
+    });
+
+    applySearchFilter({
+        searchInputEl: dom.searchInput,
+        filterTypeEl: dom.filterType,
+    });
 }
 
 function getSortedPrompts() {
-    const orderIndex = new Map(defaultPrompts.map((p, i) => [p.id, i]));
+    const orderIndex = new Map(state.defaultPrompts.map((p, i) => [p.id, i]));
 
-    return [...prompts].sort((a, b) => {
-        const sa = copyScore.get(a.id) || 0;
-        const sb = copyScore.get(b.id) || 0;
+    return [...state.prompts].sort((a, b) => {
+        const scoreA = state.copyScore.get(a.id) || 0;
+        const scoreB = state.copyScore.get(b.id) || 0;
+        if (scoreB !== scoreA) return scoreB - scoreA;
 
-        // 1) điểm copy cao hơn lên trước
-        if (sb !== sa) return sb - sa;
+        const timeA = state.lastCopiedAt.get(a.id) || 0;
+        const timeB = state.lastCopiedAt.get(b.id) || 0;
+        if (timeB !== timeA) return timeB - timeA;
 
-        // 2) nếu điểm bằng nhau, cái copy gần nhất lên trước
-        const ta = lastCopiedAt.get(a.id) || 0;
-        const tb = lastCopiedAt.get(b.id) || 0;
-        if (tb !== ta) return tb - ta;
-
-        // 3) nếu vẫn bằng, giữ theo thứ tự mặc định khi load
         return (
             (orderIndex.get(a.id) ?? 999999) - (orderIndex.get(b.id) ?? 999999)
         );
     });
 }
 
-// ===== AUTH UI =====
+// ========================= AUTH LAYER =========================
 async function refreshAuthUI() {
-    if (authRefreshing) return;
-    authRefreshing = true;
+    if (state.authRefreshing) return;
+    state.authRefreshing = true;
 
     try {
         const {
             data: { session },
             error: sessionError,
-        } = await supabase.auth.getSession();
+        } = await state.supabase.auth.getSession();
+        if (sessionError) throw sessionError;
 
-        if (sessionError) {
-            console.error("Session error:", sessionError);
-            showToast(toastEl, "Auth service unavailable");
+        state.user = session?.user ?? null;
+
+        // Guest
+        if (!state.user) {
+            resetGuestUI();
             return;
         }
 
-        sessionUser = session?.user ?? null;
-
-        // ===== GUEST =====
-        if (!sessionUser) {
-            isAdmin = false;
-
-            btnShowLogin.classList.remove("hidden");
-            btnLogout.classList.add("hidden");
-            btnNew.classList.add("hidden");
-            helloUser.classList.add("hidden");
-            helloUser.textContent = "";
-
-            pricingSection.classList.remove("hidden");
-            gridEl.innerHTML = "";
-            return;
-        }
-
-        // ===== LOGGED IN =====
-        btnShowLogin.classList.add("hidden");
-        btnLogout.classList.remove("hidden");
-
-        // ===== LOAD PROFILE (SAFE) =====
-        const { data: profile, error } = await supabase
-            .from("profiles")
-            .select("plan, role, locked_before")
-            .eq("id", sessionUser.id)
-            .maybeSingle();
-
-        helloUser.innerHTML = `<strong><span style="color:red">Hi,</span> ${sessionUser.email}</strong>`;
-        helloUser.classList.remove("hidden");
-
-        if (error) {
-            console.error("Profile error:", error);
-            showToast(toastEl, "Profile service unavailable");
-            return;
-        }
-
-        if (!profile) {
-            showToast(toastEl, "Profile not found");
-            return;
-        }
-
-        // ===== CHECK ADMIN =====
-        userPlan = profile.plan || "free";
-        proLockedBefore = profile.locked_before || null;
-        isAdmin = profile.role === "admin";
-
-        btnNew.classList.toggle("hidden", !isAdmin);
-
-        // ===== ADMIN =====
-        if (isAdmin) {
-            pricingSection.classList.add("hidden");
-            await loadPrompts();
-            return;
-        }
-
-        // ===== FREE =====
-        if (profile.plan === "free") {
-            pricingSection.classList.remove("hidden");
-            gridEl.innerHTML = "";
-            return;
-        }
-
-        // ===== PRO / LIFETIME =====
-        pricingSection.classList.add("hidden");
-        await loadPrompts();
+        // Logged-in
+        await handleLoggedInUser();
+    } catch (err) {
+        console.error("Auth error:", err);
+        showToast(dom.toast, "Auth service unavailable");
     } finally {
-        authRefreshing = false;
+        state.authRefreshing = false;
     }
 }
 
-// ===== EVENTS =====
-loginForm?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    btnLogin.click();
-});
+function resetGuestUI() {
+    state.isAdmin = false;
+    state.userPlan = "free";
+    dom.btnShowLogin.classList.remove("hidden");
+    dom.btnLogout.classList.add("hidden");
+    dom.btnNew.classList.add("hidden");
+    dom.helloUser.classList.add("hidden");
+    dom.pricingSection.classList.remove("hidden");
+    dom.grid.innerHTML = "";
+}
 
-btnShowLogin.addEventListener("click", () => {
-    loginModal.classList.remove("hidden");
-    document.body.style.overflow = "hidden";
+async function handleLoggedInUser() {
+    dom.btnShowLogin.classList.add("hidden");
+    dom.btnLogout.classList.remove("hidden");
 
-    requestAnimationFrame(() => {
-        loginOverlay.classList.remove("opacity-0");
-        loginBox.classList.remove("opacity-0", "scale-95", "translate-y-6");
-    });
-});
+    const { data: profile, error } = await state.supabase
+        .from("profiles")
+        .select("plan, role")
+        .eq("id", state.user.id)
+        .maybeSingle();
 
-btnLogin.addEventListener("click", async () => {
-    const email = emailEl.value.trim();
-    const password = passEl.value;
-
-    if (!email || !password) {
-        return showToast(toastEl, "Nhập email & password");
+    if (state.isAdmin) {
+        dom.helloUser.classList.add("hidden");
+        return;
+    } else {
+        let badge = "";
+    
+        if (state.userPlan === "pro") {
+            badge = `<span class="ml-2 rounded-md bg-blue-600 px-2 py-0.5 text-[11px] font-bold text-white">PRO</span>`;
+        }
+    
+        if (state.userPlan === "lifetime") {
+            badge = `<span class="ml-2 rounded-md bg-emerald-600 px-2 py-0.5 text-[11px] font-bold text-white">LIFETIME</span>`;
+        }
+    
+        dom.helloUser.innerHTML = `
+        <span class="flex items-center">
+            <span><span class="text-red-500">Hi,</span> ${state.user.email}</span>
+            ${badge}
+        </span>
+        `;
+        dom.helloUser.classList.remove("hidden");
     }
 
-    const { error } = await supabase.auth.signInWithPassword({
+    if (error || !profile) {
+        state.userPlan = "free";
+        state.isAdmin = false;
+        showToast(dom.toast, "Profile not found, treated as Free");
+    } else {
+        state.userPlan = profile.plan || "free";
+        state.isAdmin = profile.role === "admin";
+    }
+
+    dom.btnNew.classList.toggle("hidden", !state.isAdmin);
+
+    if (state.userPlan === "free") {
+        dom.pricingSection.classList.remove("hidden");
+        dom.grid.innerHTML = "";
+        return;
+    }
+
+    // 🧊 Pro: nếu chưa có bản copy thì tạo
+    if (state.userPlan === "pro") {
+        const { count } = await state.supabase
+            .from("prompts_copy")
+            .select("*", { count: "exact", head: true })
+            .eq("user_id", state.user.id);
+
+        if (count === 0) {
+            showToast(dom.toast, "Đang tạo bản cứng cho Pro...");
+
+            const { data: prompts } = await state.supabase
+                .from("prompts")
+                .select("id, title, type, prompt_text, created_at");
+
+            if (prompts?.length) {
+                const copies = prompts.map((p) => ({
+                    user_id: state.user.id,
+                    prompt_id: p.id,
+                    title: p.title,
+                    type: p.type,
+                    prompt_text: p.prompt_text,
+                    original_created_at: p.created_at,
+                }));
+
+                const { error } = await state.supabase
+                    .from("prompts_copy")
+                    .insert(copies);
+
+                if (error) {
+                    console.error(error);
+                    showToast(dom.toast, "Tạo bản cứng thất bại");
+                } else {
+                    showToast(dom.toast, "Bản cứng Pro đã sẵn sàng");
+                }
+            }
+        }
+    }
+
+    dom.pricingSection.classList.add("hidden");
+    await loadPrompts();
+}
+
+// ========================= UI EVENT HANDLERS =========================
+function setupEventListeners() {
+    // Login
+    dom.btnShowLogin.addEventListener("click", showLoginModal);
+    dom.closeLoginModal.addEventListener("click", closeLoginModal);
+    dom.loginModal.addEventListener(
+        "click",
+        (e) => e.target === dom.loginModal && closeLoginModal(),
+    );
+    dom.loginForm?.addEventListener("submit", (e) => {
+        e.preventDefault();
+        dom.btnLogin.click();
+    });
+    dom.btnLogin.addEventListener("click", handleLogin);
+
+    // Logout
+    dom.btnLogout.addEventListener("click", handleLogout);
+
+    // New prompt (admin)
+    dom.btnNew.addEventListener("click", () => {
+        if (!state.isAdmin)
+            return showToast(dom.toast, "Only admin can create prompts");
+        state.editingId = null;
+        state.originalPromptSnapshot = null;
+        openModalCreate({
+            modalEl: dom.modal,
+            headingEl: dom.modalHeading,
+            titleEl: dom.modalTitle,
+            typeEl: dom.modalType,
+            textEl: dom.modalText,
+        });
+        document.body.style.overflow = "hidden";
+    });
+
+    // Card actions (delegated)
+    dom.grid.addEventListener("click", handleCardAction);
+
+    // Modal
+    dom.closeModal.addEventListener("click", closePromptModal);
+    dom.cancelModal.addEventListener("click", closePromptModal);
+    dom.modal.addEventListener(
+        "click",
+        (e) => e.target === dom.modal && closePromptModal(),
+    );
+    dom.saveModal.addEventListener("click", handleSavePrompt);
+
+    // View modal
+    dom.closeViewModal.addEventListener("click", () => {
+        dom.viewModal.classList.add("hidden");
+        document.body.style.overflow = "auto";
+    });
+    dom.viewModal.addEventListener(
+        "click",
+        (e) =>
+            e.target === dom.viewModal && dom.viewModal.classList.add("hidden"),
+    );
+
+    // Search
+    dom.searchInput.addEventListener("input", () =>
+        applySearchFilter({
+            searchInputEl: dom.searchInput,
+            filterTypeEl: dom.filterType,
+        }),
+    );
+    dom.filterType.addEventListener("change", () =>
+        applySearchFilter({
+            searchInputEl: dom.searchInput,
+            filterTypeEl: dom.filterType,
+        }),
+    );
+
+    // Scroll to top
+    window.addEventListener("scroll", () =>
+        dom.btnTop.classList.toggle("hidden", window.scrollY < 300),
+    );
+}
+
+async function handleLogin() {
+    const email = dom.emailInput.value.trim();
+    const password = dom.passwordInput.value;
+
+    if (!email || !password)
+        return showToast(dom.toast, "Please enter email & password");
+
+    const { error } = await state.supabase.auth.signInWithPassword({
         email,
         password,
     });
 
     if (error) {
-        console.error(error);
-
-        if (error.message.includes("Invalid login")) {
-            showToast(toastEl, "❌ Sai email hoặc mật khẩu");
-        } else {
-            showToast(toastEl, "Đăng nhập thất bại");
-        }
+        showToast(
+            dom.toast,
+            error.message.includes("Invalid login")
+                ? "❌ Wrong email or password"
+                : "Login failed",
+        );
         return;
     }
 
-    showToast(toastEl, "Logged in ✅");
-    closeLogin();
+    showToast(dom.toast, "Logged in ✅");
+    closeLoginModal();
     await refreshAuthUI();
-});
+}
 
-btnLogout.addEventListener("click", async () => {
-    await supabase.auth.signOut();
-    helloUser.classList.add("hidden");
-    helloUser.textContent = "";
-    showToast(toastEl, "Logged out");
+async function handleLogout() {
+    await state.supabase.auth.signOut();
+    showToast(dom.toast, "Logged out");
     await refreshAuthUI();
-});
+}
 
-function closeLogin() {
-    loginOverlay.classList.add("opacity-0");
-    loginBox.classList.add("opacity-0", "scale-95", "translate-y-6");
+function showLoginModal() {
+    dom.loginModal.classList.remove("hidden");
+    document.body.style.overflow = "hidden";
+    requestAnimationFrame(() => {
+        dom.loginOverlay.classList.remove("opacity-0");
+        dom.loginBox.classList.remove("opacity-0", "scale-95", "translate-y-6");
+    });
+}
 
+function closeLoginModal() {
+    dom.loginOverlay.classList.add("opacity-0");
+    dom.loginBox.classList.add("opacity-0", "scale-95", "translate-y-6");
     setTimeout(() => {
-        loginModal.classList.add("hidden");
+        dom.loginModal.classList.add("hidden");
         document.body.style.overflow = "auto";
     }, 300);
 }
 
-closeLoginModal.addEventListener("click", closeLogin);
-loginModal.addEventListener("click", (e) => {
-    if (e.target === loginModal) closeLogin();
-});
-
-closeViewModal.addEventListener("click", () => {
-    viewModal.classList.add("hidden");
+function closePromptModal() {
+    closeModal(dom.modal);
     document.body.style.overflow = "auto";
-});
+}
 
-viewModal.addEventListener("click", (e) => {
-    if (e.target === viewModal) viewModal.classList.add("hidden");
-});
+async function handleSavePrompt() {
+    if (!state.isAdmin) return showToast(dom.toast, "Only admin");
 
-// ===== NEW PROMPT (ADMIN) =====
-btnNew.addEventListener("click", () => {
-    if (!isAdmin) return showToast(toastEl, "Only admin");
+    const title = dom.modalTitle.value.trim();
+    const type = dom.modalType.value;
+    const prompt_text = dom.modalText.value.trim();
 
-    editingId = null;
-    originalPromptSnapshot = null;
+    if (state.editingId && state.originalPromptSnapshot) {
+        const noChange =
+            title === state.originalPromptSnapshot.title &&
+            type === state.originalPromptSnapshot.type &&
+            prompt_text === state.originalPromptSnapshot.prompt_text;
 
-    openModalCreate({
-        modalEl,
-        headingEl: modalHeadingEl,
-        titleEl: modalTitleEl,
-        typeEl: modalTypeEl,
-        textEl: modalTextEl,
-    });
-    document.body.style.overflow = "hidden";
-});
+        if (noChange) return showToast(dom.toast, "No changes to save");
+    }
 
-// ===== CARD ACTIONS =====
-gridEl.addEventListener("click", async (e) => {
+    if (!title || !prompt_text)
+        return showToast(dom.toast, "Title and prompt text are required");
+
+    const payload = { title, type, prompt_text };
+
+    let error;
+    if (!state.editingId) {
+        ({ error } = await state.supabase.from("prompts").insert(payload));
+        showToast(dom.toast, error ? "Create failed" : "Created ✅");
+    } else {
+        ({ error } = await state.supabase
+            .from("prompts")
+            .update(payload)
+            .eq("id", state.editingId));
+        showToast(dom.toast, error ? "Update failed" : "Saved ✅");
+    }
+
+    if (!error) {
+        closePromptModal();
+        await loadPrompts();
+    }
+}
+
+async function handleCardAction(e) {
     const btn = e.target.closest("[data-action]");
     if (!btn) return;
 
@@ -313,146 +455,89 @@ gridEl.addEventListener("click", async (e) => {
     const id = card.dataset.id;
 
     if (action === "view") {
-        viewTitle.textContent = card.dataset.title || "Prompt";
-        viewContent.textContent = card.dataset.text || "";
-        viewModal.classList.remove("hidden");
+        dom.viewTitle.textContent = card.dataset.title || "Prompt";
+        dom.viewContent.textContent = card.dataset.text || "";
+        dom.viewModal.classList.remove("hidden");
         document.body.style.overflow = "hidden";
         return;
     }
 
-    // COPY (guest allowed)
     if (action === "copy") {
+        if (state.userPlan === "free") {
+            showToast(
+                dom.toast,
+                "Gói Free không hỗ trợ copy. Nâng cấp Pro hoặc Lifetime nhé!",
+            );
+            return;
+        }
         try {
             await copyToClipboard(card.dataset.text || "");
-            showToast(toastEl, "Copied ✅");
+            showToast(dom.toast, "Copied ✅");
 
-            // tăng điểm copy trong phiên hiện tại
-            copyScore.set(id, (copyScore.get(id) || 0) + 1);
-            lastCopiedAt.set(id, Date.now());
+            state.copyScore.set(id, (state.copyScore.get(id) || 0) + 1);
+            state.lastCopiedAt.set(id, Date.now());
 
-            // render lại để card nhảy lên đầu
             renderPrompts({
-                gridEl,
-                emptyStateEl,
+                gridEl: dom.grid,
+                emptyStateEl: dom.emptyState,
                 list: getSortedPrompts(),
-                isAdmin,
+                isAdmin: state.isAdmin,
             });
-            applySearchFilter({ searchInputEl, filterTypeEl });
+            applySearchFilter({
+                searchInputEl: dom.searchInput,
+                filterTypeEl: dom.filterType,
+            });
         } catch {
-            showToast(toastEl, "Copy failed");
+            showToast(dom.toast, "Copy failed");
         }
         return;
     }
 
-    // ADMIN CHECK
-    if (!isAdmin) return showToast(toastEl, "Only admin");
+    if (!state.isAdmin) return showToast(dom.toast, "Only admin");
 
     if (action === "edit") {
-        const p = prompts.find((x) => x.id === id);
-        if (!p) return;
+        const prompt = state.prompts.find((p) => p.id === id);
+        if (!prompt) return;
 
-        editingId = id;
-
-        originalPromptSnapshot = {
-            title: p.title ?? "",
-            type: p.type ?? "",
-            prompt_text: p.prompt_text ?? "",
+        state.editingId = id;
+        state.originalPromptSnapshot = {
+            title: prompt.title ?? "",
+            type: prompt.type ?? "",
+            prompt_text: prompt.prompt_text ?? "",
         };
 
         openModalEdit({
-            modalEl,
-            headingEl: modalHeadingEl,
-            titleEl: modalTitleEl,
-            typeEl: modalTypeEl,
-            textEl: modalTextEl,
-            prompt: p,
+            modalEl: dom.modal,
+            headingEl: dom.modalHeading,
+            titleEl: dom.modalTitle,
+            typeEl: dom.modalType,
+            textEl: dom.modalText,
+            prompt,
         });
         document.body.style.overflow = "hidden";
     }
 
     if (action === "delete") {
-        if (!confirm("Do you want to remove this Prompt?")) return;
-        const { error } = await supabase.from("prompts").delete().eq("id", id);
+        if (!confirm("Delete this prompt?")) return;
+        const { error } = await state.supabase
+            .from("prompts")
+            .delete()
+            .eq("id", id);
         if (!error) {
-            showToast(toastEl, "Removed ✅");
+            showToast(dom.toast, "Removed ✅");
             await loadPrompts();
         }
     }
-});
+}
 
-// ===== MODAL =====
-closeModalBtn.addEventListener("click", () => {
-    closeModal(modalEl);
-    document.body.style.overflow = "auto";
-});
+// ========================= INIT =========================
+async function init() {
+    setupEventListeners();
+    await refreshAuthUI();
 
-cancelModalBtn.addEventListener("click", () => {
-    closeModal(modalEl);
-    document.body.style.overflow = "auto";
-});
+    state.supabase.auth.onAuthStateChange((event) => {
+        if (["SIGNED_IN", "SIGNED_OUT"].includes(event)) refreshAuthUI();
+    });
+}
 
-modalEl.addEventListener("click", (e) => {
-    if (e.target === modalEl) {
-        closeModal(modalEl);
-        document.body.style.overflow = "auto";
-    }
-});
-
-saveModalBtn.addEventListener("click", async () => {
-    if (!isAdmin) return showToast(toastEl, "Only admin");
-
-    const title = modalTitleEl.value.trim();
-    const type = modalTypeEl.value;
-    const prompt_text = modalTextEl.value.trim();
-
-    // ===== CHECK KHÔNG CÓ THAY ĐỔI (CHỈ ÁP DỤNG KHI EDIT) =====
-    if (editingId && originalPromptSnapshot) {
-        const isChanged =
-            title !== originalPromptSnapshot.title ||
-            type !== originalPromptSnapshot.type ||
-            prompt_text !== originalPromptSnapshot.prompt_text;
-
-        if (!isChanged) {
-            showToast(toastEl, "No changes to save");
-            return;
-        }
-    }
-
-    if (!title || !prompt_text) {
-        return showToast(toastEl, "Title and prompt are required");
-    }
-
-    const payload = { title, type, prompt_text };
-
-    if (!editingId) {
-        await supabase.from("prompts").insert(payload);
-        showToast(toastEl, "Created ✅");
-    } else {
-        await supabase.from("prompts").update(payload).eq("id", editingId);
-        showToast(toastEl, "Saved ✅");
-    }
-
-    closeModal(modalEl);
-    document.body.style.overflow = "auto";
-    await loadPrompts();
-});
-
-window.addEventListener("scroll", () => {
-    btnTop.classList.toggle("hidden", window.scrollY < 300);
-});
-
-// ===== SEARCH =====
-searchInputEl.addEventListener("input", () =>
-    applySearchFilter({ searchInputEl, filterTypeEl }),
-);
-filterTypeEl.addEventListener("change", () =>
-    applySearchFilter({ searchInputEl, filterTypeEl }),
-);
-
-// ===== INIT =====
-await refreshAuthUI();
-supabase.auth.onAuthStateChange((event) => {
-    if (event === "SIGNED_IN" || event === "SIGNED_OUT") {
-        refreshAuthUI();
-    }
-});
+init();
