@@ -1,7 +1,3 @@
-.hidden {
-    display: none !important;
-}
-
 mark {
     background-color: #fde68a; /* yellow-200 */
     padding: 0 2px;
