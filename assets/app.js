@@ -377,6 +377,7 @@ async function handleLogin() {
 
     showToast(dom.toast, "Logged in ✅");
     closeLoginModal();
+    await state.supabase.auth.refreshSession();
     await refreshAuthUI();
 }
 
