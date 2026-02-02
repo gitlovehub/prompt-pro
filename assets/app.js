@@ -12,6 +12,7 @@ import {
 
 let userPlan = "free";
 let authRefreshing = false;
+let proLockedBefore = null;
 
 // ===== CONFIG =====
 const SUPABASE_URL = "https://nwzoeapjzsugdtohcfyx.supabase.co";
@@ -74,8 +75,8 @@ async function loadPrompts() {
     let query = supabase.from("prompts").select("*");
 
     // ===== CHẶN PRO KHÔNG XEM PROMPT MỚI =====
-    if (!isAdmin && userPlan === "pro" && window.proLockedBefore) {
-        query = query.lte("updated_at", window.proLockedBefore);
+    if (!isAdmin && userPlan === "pro" && proLockedBefore) {
+        query = query.lte("updated_at", proLockedBefore);
     }
 
     const { data, error } = await query.order("updated_at", {
@@ -156,7 +157,7 @@ async function refreshAuthUI() {
         // ===== LOAD PROFILE (SAFE) =====
         const { data: profile, error } = await supabase
             .from("profiles")
-            .select("plan, role")
+            .select("plan, role, locked_before")
             .eq("id", sessionUser.id)
             .maybeSingle();
 
@@ -172,9 +173,10 @@ async function refreshAuthUI() {
         }
 
         // ===== CHECK ADMIN =====
-        userPlan = profile.plan;
-        window.proLockedBefore = profile.locked_before;
+        userPlan = profile.plan || "free";
+        proLockedBefore = profile.locked_before || null;
         isAdmin = profile.role === "admin";
+
         btnNew.classList.toggle("hidden", !isAdmin);
 
         // ===== ADMIN =====
