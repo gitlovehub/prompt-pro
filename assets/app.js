@@ -164,7 +164,7 @@ async function refreshAuthUI() {
             .eq("id", sessionUser.id)
             .maybeSingle();
 
-        helloUser.textContent = `Hi, ${sessionUser.email}`;
+        helloUser.innerHTML = `<strong><span style="color:red">Hi,</span> ${sessionUser.email}</strong>`;
         helloUser.classList.remove("hidden");
 
         if (error) {
