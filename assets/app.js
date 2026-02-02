@@ -244,33 +244,6 @@ async function handleLoggedInUser() {
         return;
     }
 
-    // ---- PRO COPY LOGIC ----
-    if (state.userPlan === "pro") {
-        const { count } = await state.supabase
-            .from("prompts_copy")
-            .select("*", { count: "exact", head: true })
-            .eq("user_id", state.user.id);
-
-        if (count === 0) {
-            const { data: prompts } = await state.supabase
-                .from("prompts")
-                .select("id, title, type, prompt_text, created_at");
-
-            if (prompts?.length) {
-                const copies = prompts.map((p) => ({
-                    user_id: state.user.id,
-                    prompt_id: p.id,
-                    title: p.title,
-                    type: p.type,
-                    prompt_text: p.prompt_text,
-                    original_created_at: p.created_at,
-                }));
-
-                await state.supabase.from("prompts_copy").insert(copies);
-            }
-        }
-    }
-
     dom.searchBar.classList.remove("hidden");
     dom.pricingSection.classList.add("hidden");
     await loadPrompts();
