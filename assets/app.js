@@ -53,6 +53,7 @@ const loginOverlay = document.getElementById("loginOverlay");
 const loginBox = document.getElementById("loginBox");
 const closeLoginModal = document.getElementById("closeLoginModal");
 const btnTop = document.getElementById("btnTop");
+const pricingSection = document.getElementById("pricingSection");
 
 // ===== STATE =====
 let sessionUser = null;
@@ -112,6 +113,7 @@ async function refreshAuthUI() {
     const {
         data: { session },
     } = await supabase.auth.getSession();
+
     sessionUser = session?.user ?? null;
 
     // ===== GUEST =====
@@ -122,7 +124,9 @@ async function refreshAuthUI() {
         btnLogout.classList.add("hidden");
         btnNew.classList.add("hidden");
 
-        await loadPrompts();
+        pricingSection.classList.remove("hidden");
+        gridEl.innerHTML = ""; // không load prompt
+
         return;
     }
 
@@ -131,15 +135,41 @@ async function refreshAuthUI() {
 
     btnShowLogin.classList.add("hidden");
     btnLogout.classList.remove("hidden");
+
+    // 👉 ADMIN thì vẫn thấy nút New
     btnNew.classList.toggle("hidden", !isAdmin);
 
+    // ===== LẤY QUYỀN USER =====
+    const { data: profile } = await supabase
+        .from("profiles")
+        .select("plan, role")
+        .eq("id", sessionUser.id)
+        .maybeSingle();
+
+    // ===== ADMIN BYPASS =====
+    if (profile?.role === "admin") {
+        pricingSection.classList.add("hidden");
+        await loadPrompts();
+        return;
+    }
+
+    // ===== KHÓA NỘI DUNG =====
+    if (!profile || profile.plan === "free") {
+        pricingSection.classList.remove("hidden");
+        gridEl.innerHTML = "";
+        btnNew.classList.add("hidden");
+        return;
+    }
+
+    // ===== ĐƯỢC PHÉP XEM PROMPT =====
+    pricingSection.classList.add("hidden");
     await loadPrompts();
 }
 
 // ===== EVENTS =====
 loginForm?.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  btnLogin.click();
+    e.preventDefault();
+    btnLogin.click();
 });
 
 btnShowLogin.addEventListener("click", () => {
@@ -359,7 +389,7 @@ saveModalBtn.addEventListener("click", async () => {
 });
 
 window.addEventListener("scroll", () => {
-  btnTop.classList.toggle("hidden", window.scrollY < 300);
+    btnTop.classList.toggle("hidden", window.scrollY < 300);
 });
 
 // ===== SEARCH =====
