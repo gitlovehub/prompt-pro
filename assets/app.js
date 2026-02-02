@@ -10,6 +10,7 @@ import {
     closeModal,
 } from "./ui.js";
 
+let userPlan = "free";
 let authRefreshing = false;
 
 // ===== CONFIG =====
@@ -70,10 +71,16 @@ let defaultPrompts = []; // lưu list gốc theo DB
 
 // ===== LOAD PROMPTS =====
 async function loadPrompts() {
-    const { data, error } = await supabase
-        .from("prompts")
-        .select("*")
-        .order("updated_at", { ascending: false });
+    let query = supabase.from("prompts").select("*");
+
+    // ===== CHẶN PRO KHÔNG XEM PROMPT MỚI =====
+    if (!isAdmin && userPlan === "pro" && window.proLockedBefore) {
+        query = query.lte("updated_at", window.proLockedBefore);
+    }
+
+    const { data, error } = await query.order("updated_at", {
+        ascending: false,
+    });
 
     if (error) {
         console.error(error);
@@ -82,7 +89,7 @@ async function loadPrompts() {
     }
 
     prompts = data || [];
-    defaultPrompts = [...prompts]; // ✅ snapshot đúng lúc load
+    defaultPrompts = [...prompts];
 
     renderPrompts({ gridEl, emptyStateEl, list: getSortedPrompts(), isAdmin });
     applySearchFilter({ searchInputEl, filterTypeEl });
@@ -165,6 +172,8 @@ async function refreshAuthUI() {
         }
 
         // ===== CHECK ADMIN =====
+        userPlan = profile.plan;
+        window.proLockedBefore = profile.locked_before;
         isAdmin = profile.role === "admin";
         btnNew.classList.toggle("hidden", !isAdmin);
 
