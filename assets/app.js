@@ -10,6 +10,8 @@ import {
     closeModal,
 } from "./ui.js";
 
+let authRefreshing = false;
+
 // ===== CONFIG =====
 const SUPABASE_URL = "https://nwzoeapjzsugdtohcfyx.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_TsL3PRhhpmnVjme70W7wwg_cC4lWs8K";
@@ -110,60 +112,82 @@ function getSortedPrompts() {
 
 // ===== AUTH UI =====
 async function refreshAuthUI() {
-    const {
-        data: { session },
-    } = await supabase.auth.getSession();
+    if (authRefreshing) return;
+    authRefreshing = true;
 
-    sessionUser = session?.user ?? null;
+    try {
+        const {
+            data: { session },
+            error: sessionError,
+        } = await supabase.auth.getSession();
 
-    // ===== GUEST =====
-    if (!sessionUser) {
-        isAdmin = false;
+        if (sessionError) {
+            console.error("Session error:", sessionError);
+            showToast(toastEl, "Auth service unavailable");
+            return;
+        }
 
-        btnShowLogin.classList.remove("hidden");
-        btnLogout.classList.add("hidden");
-        btnNew.classList.add("hidden");
+        sessionUser = session?.user ?? null;
 
-        pricingSection.classList.remove("hidden");
-        gridEl.innerHTML = ""; // không load prompt
+        // ===== GUEST =====
+        if (!sessionUser) {
+            isAdmin = false;
 
-        return;
-    }
+            btnShowLogin.classList.remove("hidden");
+            btnLogout.classList.add("hidden");
+            btnNew.classList.add("hidden");
 
-    // ===== LOGGED IN =====
-    isAdmin = sessionUser.id === ADMIN_UID;
+            pricingSection.classList.remove("hidden");
+            gridEl.innerHTML = "";
+            return;
+        }
 
-    btnShowLogin.classList.add("hidden");
-    btnLogout.classList.remove("hidden");
+        // ===== LOGGED IN =====
+        btnShowLogin.classList.add("hidden");
+        btnLogout.classList.remove("hidden");
 
-    // 👉 ADMIN thì vẫn thấy nút New
-    btnNew.classList.toggle("hidden", !isAdmin);
+        // ===== LOAD PROFILE (SAFE) =====
+        const { data: profile, error } = await supabase
+            .from("profiles")
+            .select("plan, role")
+            .eq("id", sessionUser.id)
+            .maybeSingle();
 
-    // ===== LẤY QUYỀN USER =====
-    const { data: profile } = await supabase
-        .from("profiles")
-        .select("plan, role")
-        .eq("id", sessionUser.id)
-        .maybeSingle();
+        if (error) {
+            console.error("Profile error:", error);
+            showToast(toastEl, "Profile service unavailable");
+            return;
+        }
 
-    // ===== ADMIN BYPASS =====
-    if (profile?.role === "admin") {
+        if (!profile) {
+            showToast(toastEl, "Profile not found");
+            return;
+        }
+
+        // ===== CHECK ADMIN =====
+        isAdmin = profile.role === "admin";
+        btnNew.classList.toggle("hidden", !isAdmin);
+
+        // ===== ADMIN =====
+        if (isAdmin) {
+            pricingSection.classList.add("hidden");
+            await loadPrompts();
+            return;
+        }
+
+        // ===== FREE =====
+        if (profile.plan === "free") {
+            pricingSection.classList.remove("hidden");
+            gridEl.innerHTML = "";
+            return;
+        }
+
+        // ===== PRO / LIFETIME =====
         pricingSection.classList.add("hidden");
         await loadPrompts();
-        return;
+    } finally {
+        authRefreshing = false;
     }
-
-    // ===== KHÓA NỘI DUNG =====
-    if (!profile || profile.plan === "free") {
-        pricingSection.classList.remove("hidden");
-        gridEl.innerHTML = "";
-        btnNew.classList.add("hidden");
-        return;
-    }
-
-    // ===== ĐƯỢC PHÉP XEM PROMPT =====
-    pricingSection.classList.add("hidden");
-    await loadPrompts();
 }
 
 // ===== EVENTS =====
@@ -194,9 +218,16 @@ btnLogin.addEventListener("click", async () => {
         email,
         password,
     });
+
     if (error) {
         console.error(error);
-        return showToast(toastEl, "Login failed");
+
+        if (error.message.includes("Invalid login")) {
+            showToast(toastEl, "❌ Sai email hoặc mật khẩu");
+        } else {
+            showToast(toastEl, "Đăng nhập thất bại");
+        }
+        return;
     }
 
     showToast(toastEl, "Logged in ✅");
@@ -208,7 +239,6 @@ btnLogout.addEventListener("click", async () => {
     await supabase.auth.signOut();
     showToast(toastEl, "Logged out");
     await refreshAuthUI();
-    location.reload();
 });
 
 function closeLogin() {
@@ -402,4 +432,8 @@ filterTypeEl.addEventListener("change", () =>
 
 // ===== INIT =====
 await refreshAuthUI();
-supabase.auth.onAuthStateChange(() => refreshAuthUI());
+supabase.auth.onAuthStateChange((event) => {
+    if (event === "SIGNED_IN" || event === "SIGNED_OUT") {
+        refreshAuthUI();
+    }
+});
