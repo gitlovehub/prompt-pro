@@ -82,20 +82,31 @@ const dom = {
 async function loadPrompts() {
     let query;
 
-    // 🔒 Pro: load bản cứng
-    if (state.userPlan === "pro") {
+    // 🔓 Ultimate & Admin: realtime
+    if (state.isAdmin || state.userPlan === "ultimate") {
+        query = state.supabase
+            .from("prompts")
+            .select("*")
+            .order("updated_at", { ascending: false });
+    }
+    // 🧊 Pro: bản cứng
+    else if (state.userPlan === "pro") {
         query = state.supabase
             .from("prompts_copy")
             .select("*")
             .eq("user_id", state.user.id)
             .order("original_created_at", { ascending: false });
     }
-    // 🔓 ultimate / Admin: realtime
+    // 🆓 Free: không load
     else {
-        query = state.supabase
-            .from("prompts")
-            .select("*")
-            .order("updated_at", { ascending: false });
+        state.prompts = [];
+        renderPrompts({
+            gridEl: dom.grid,
+            emptyStateEl: dom.emptyState,
+            list: [],
+            isAdmin: false,
+        });
+        return;
     }
 
     const { data, error } = await query;
