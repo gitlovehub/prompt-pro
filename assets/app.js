@@ -207,14 +207,14 @@ async function handleLoggedInUser() {
 
     if (!state.isAdmin) {
         if (state.userPlan === "pro") {
-            dom.planBadge.textContent = "PRO";
+            dom.planBadge.textContent = "Pro";
             dom.planBadge.className =
                 "inline-flex items-center rounded-md bg-blue-100 px-2 py-1 text-sm font-medium text-blue-700 inset-ring inset-ring-blue-700/10";
             dom.planBadge.classList.remove("hidden");
         }
 
         if (state.userPlan === "ultimate") {
-            dom.planBadge.textContent = "ULTIMATE";
+            dom.planBadge.textContent = "Ultimate";
             dom.planBadge.className =
                 "inline-flex items-center rounded-md bg-emerald-100 px-2 py-1 text-sm font-medium text-emerald-700 inset-ring inset-ring-emerald-700/10";
             dom.planBadge.classList.remove("hidden");
