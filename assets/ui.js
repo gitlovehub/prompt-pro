@@ -117,7 +117,7 @@ export function renderPrompts({ gridEl, emptyStateEl, list, isAdmin }) {
               <span class="text-xs text-slate-500">${updated ? "Updated: " + updated : ""}</span>
             </div>
           </div>
-          <button class="rounded-xl px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50" data-action="view">View</button>
+          <button class="rounded-xl px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 hover:text-black" data-action="view">View</button>
         </div>
 
         <p 
