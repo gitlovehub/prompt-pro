@@ -284,7 +284,7 @@
                                 <input
                                     id="modalTitle"
                                     class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:ring-4 focus:ring-blue-100"
-                                    placeholder="Tiêu đề prompt"
+                                    placeholder=""
                                 />
                             </div>
 
@@ -331,7 +331,7 @@
                                 <textarea
                                     id="modalText"
                                     class="min-h-[150px] w-full resize-y rounded-2xl border border-slate-200 p-4 text-sm leading-7 outline-none focus:ring-4 focus:ring-blue-100"
-                                    placeholder="Nội dung prompt..."></textarea>
+                                    placeholder=""></textarea>
                             </div>
                         </div>
 
@@ -365,7 +365,7 @@
 
         <!-- Modal box -->
         <div
-            class="absolute left-1/2 top-1/2 w-[94%] max-w-5xl -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-3xl bg-white shadow-2xl">
+            class="absolute left-1/2 top-1/2 flex max-h-[90vh] w-[94%] max-w-5xl -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-3xl bg-white shadow-2xl">
 
             <!-- Header -->
             <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
@@ -385,7 +385,7 @@
             </div>
 
             <!-- Ảnh trái + nội dung phải -->
-            <div class="grid max-h-[82vh] overflow-hidden md:grid-cols-[3fr_7fr]">
+            <div class="grid min-h-0 flex-1 overflow-y-auto md:grid-cols-[3fr_7fr] md:overflow-hidden">
 
                 <!-- Ảnh bên trái -->
                 <div class="flex min-h-[320px] self-stretch items-center justify-center bg-slate-100 p-4 md:min-h-0">
@@ -393,7 +393,7 @@
                     <!-- Khung ảnh: chỉ hiện khi có ảnh -->
                     <div
                         id="viewImageWrap"
-                        class="hidden aspect-[9/16] h-full max-h-[74vh] w-auto overflow-hidden rounded-2xl bg-black">
+                        class="hidden aspect-[9/16] w-[170px] max-w-full overflow-hidden rounded-2xl bg-black sm:w-[190px] md:h-full md:max-h-[74vh] md:w-auto">
 
                         <img
                             id="viewImage"
@@ -406,7 +406,7 @@
                     <!-- Chỉ hiện khi không có ảnh -->
                     <div
                         id="viewImageEmpty"
-                        class="hidden aspect-[9/16] h-full max-h-[74vh] w-auto items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 text-slate-400">
+                        class="hidden aspect-[9/16] w-[170px] max-w-full items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 text-slate-400 sm:w-[190px] md:h-full md:max-h-[74vh] md:w-auto">
 
                         <svg
                             width="48"
@@ -467,14 +467,14 @@
                     <label class="mb-1 block text-xs font-semibold text-slate-600">Email</label>
                     <input id="email"
                         class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:ring-4 focus:ring-blue-100"
-                        placeholder="name@email.com" />
+                        placeholder="" />
                 </div>
 
                 <div>
                     <label class="mb-1 block text-xs font-semibold text-slate-600">Mật khẩu</label>
                     <input id="password" type="password"
                         class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:ring-4 focus:ring-blue-100"
-                        placeholder="••••••••" />
+                        placeholder="" />
                 </div>
 
                 <button id="btnLogin" type="submit"
