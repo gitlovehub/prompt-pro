@@ -20,47 +20,45 @@
                 <!-- Logo -->
                 <a href="/" class="flex items-center gap-3">
                     <!-- Logo -->
-                    <img
-                        src="assets/images/Bee_Mad_Emote.png"
-                        alt="Logo"
-                        class="h-12 w-12 sm:h-14 sm:w-14 object-contain"
-                    />
+                    <img src="assets/images/logo/Bee_Mad_Emote.png" alt="Logo"
+                        class="h-12 w-12 sm:h-14 sm:w-14 object-contain" />
 
                     <!-- Text -->
                     <span class="hidden sm:block text-lg font-extrabold">
-                        AI prompts easy for everyone
+                        환영합니다
                     </span>
                 </a>
 
                 <!-- Auth -->
                 <div class="flex items-center gap-3">
-                    <span id="planBadge" class="hidden inline-flex items-center rounded-md bg-blue-100 px-2 py-1 text-normal font-medium text-blue-700 inset-ring inset-ring-blue-700/10"></span>
+                    <span id="planBadge"
+                        class="hidden inline-flex items-center rounded-md bg-blue-100 px-2 py-1 text-normal font-medium text-blue-700 inset-ring inset-ring-blue-700/10"></span>
 
-                    <a id="pricingLink" href="/pricing.html"
-                        class="hidden rounded-xl border border-emerald-500 bg-emerald-50 px-3 py-2 text-sm uppercase font-bold text-emerald-700
+                    <a id="pricingLink" href="/pricing.html" class="hidden rounded-xl border border-emerald-500 bg-emerald-50 px-3 py-2 text-sm uppercase font-bold text-emerald-700
                             transition-colors duration-150
                             hover:bg-emerald-200">
-                        🚀 <span class="hidden sm:inline-block">ULTIMATE</span>
+                        🚀 <span class="hidden sm:inline-block">SUPER</span>
                     </a>
 
                     <button id="btnShowLogin"
                         class="rounded-xl bg-slate-900 px-3 py-2 text-sm uppercase font-bold text-white hover:bg-slate-800">
-                        Login
+                        Đăng nhập
                     </button>
 
                     <button id="btnLogout"
                         class="hidden rounded-xl bg-red-600 px-3 py-2 text-sm uppercase font-bold text-white hover:bg-red-700">
-                        Logout
+                        Đăng xuất
                     </button>
                 </div>
             </div>
         </div>
     </header>
 
-    <main class="mx-auto max-w-6xl mt-10 px-4 py-6">
+    <main class="mx-auto max-w-6xl mt-6 px-4 py-6">
 
         <!-- Controls -->
-        <div id="searchBar" class="hidden flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div id="searchBar"
+            class="hidden sticky top-32 z-40 mb-4 flex flex-col gap-3 rounded-2xl border border-white/50 bg-white/50 p-3 shadow-lg backdrop-blur-3xl md:flex-row md:items-center md:justify-between">
             <div class="flex flex-1 items-center gap-2">
                 <div class="relative w-full">
                     <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">🔎</span>
@@ -71,9 +69,9 @@
                 <div class="relative">
                     <select id="filterType"
                         class="h-11 w-[120px] md:w-[160px] appearance-none rounded-2xl border border-slate-200 bg-white px-4 pr-10 text-sm outline-none focus:ring-4 focus:ring-blue-100">
-                        <option value="all">All</option>
-                        <option value="image">Image</option>
-                        <option value="motion">Motion</option>
+                        <option value="all">Tất cả</option>
+                        <option value="image">Ảnh</option>
+                        <option value="motion">Chuyển động</option>
                     </select>
                     <!-- icon dropdown tự vẽ -->
                     <svg class="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500"
@@ -87,96 +85,86 @@
 
             <button id="btnNew"
                 class="hidden rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 active:translate-y-px">
-                New Prompt
+                Thêm mới
             </button>
         </div>
 
-        <section id="pricingSection" class="mx-auto max-w-5xl px-4 pt-8">
-            <h2 class="mb-3 text-center text-2xl sm:text-3xl font-bold">
+        <section id="pricingSection" class="mx-auto max-w-5xl px-4">
+            <h2 class="mb-3 text-center text-2xl font-bold sm:text-3xl">
                 Chọn gói truy cập Prompt
             </h2>
-            <p class="mb-12 text-center text-slate-500">
-                Chỉ trả tiền 1 lần – dùng trọn bộ prompt chất lượng cao
+
+            <p class="mb-10 text-center text-slate-500">
+                Thanh toán một lần để mở khóa toàn bộ thư viện prompt
             </p>
 
-            <div class="grid gap-6 md:grid-cols-3">
+            <div class="mx-auto grid max-w-4xl gap-8 md:grid-cols-2">
+
                 <!-- FREE -->
-                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-6 text-center opacity-70">
-                    <h3 class="mb-2 text-lg font-semibold">👻 Free</h3>
-                    <p class="mb-4 text-sm text-slate-500">Dùng thử</p>
+                <div class="rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm">
+                    <h3 class="mb-2 text-2xl font-bold">
+                        👻 Free
+                    </h3>
 
-                    <div class="mb-6 text-3xl font-bold">0₫</div>
+                    <p class="mb-6 text-slate-500">
+                        Trải nghiệm miễn phí
+                    </p>
 
-                    <ul class="mb-6 space-y-2 text-sm text-slate-600">
+                    <div class="mb-8 text-5xl font-extrabold">
+                        0₫
+                    </div>
+
+                    <ul class="mb-8 space-y-3 text-left text-slate-600">
                         <li>❌ Không xem prompt</li>
-                        <li>❌ Không copy</li>
-                        <li>❌ Không cập nhật</li>
+                        <li>❌ Không copy prompt</li>
+                        <li>❌ Không cập nhật prompt mới</li>
                     </ul>
 
                     <button disabled
-                        class="w-full cursor-not-allowed rounded-xl bg-slate-300 py-2 text-sm font-medium text-white">
-                        Đã bị khóa
+                        class="w-full cursor-not-allowed rounded-xl bg-slate-300 py-3 font-semibold text-white">
+                        Đang sử dụng
                     </button>
                 </div>
 
-                <!-- PRO -->
-                <div class="relative rounded-2xl border border-indigo-500 bg-white p-6 text-center shadow-lg">
+                <!-- SUPER -->
+                <div class="relative rounded-3xl border-2 border-emerald-500 bg-emerald-50 p-8 text-center shadow-xl">
                     <div
-                        class="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-indigo-500 px-3 py-1 text-xs font-semibold text-white">
-                        Phổ biến
+                        class="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-emerald-600 px-4 py-1 text-xs font-bold uppercase text-white">
+                        Khuyên dùng
                     </div>
 
-                    <h3 class="mb-2 text-lg font-semibold">🎯 Pro</h3>
-                    <p class="mb-4 text-sm text-slate-500">Truy cập đầy đủ</p>
-
-                    <div class="mb-6 text-3xl font-bold">
-                        199k
-                    </div>
-
-                    <ul class="mb-6 space-y-2 text-sm text-slate-600">
-                        <li>✅ Xem toàn bộ prompt</li>
-                        <li>✅ Copy không giới hạn</li>
-                        <li>❌ Không cập nhật vĩnh viễn</li>
-                    </ul>
-
-                    <a href="mailto:hungtd010302@gmail.com"
-                        class="block w-full rounded-xl bg-indigo-500 py-2 text-sm font-medium text-white hover:bg-indigo-600">
-                        Liên hệ mua
-                    </a>
-                </div>
-
-                <!-- ULTIMATE -->
-                <div class="rounded-2xl border border-emerald-500 bg-emerald-50 p-6 text-center">
-                    <h3 class="mb-2 text-lg font-semibold text-emerald-700">
-                        🚀 Ultimate
+                    <h3 class="mb-2 text-2xl font-bold text-emerald-700">
+                        🚀 Super
                     </h3>
-                    <p class="mb-4 text-sm text-emerald-600">
-                        Mua 1 lần – dùng trọn đời
+
+                    <p class="mb-6 text-emerald-700">
+                        Thanh toán một lần – cập nhật trọn đời
                     </p>
 
-                    <div class="mb-6 text-3xl font-bold text-emerald-700">
+                    <div class="mb-8 text-5xl font-extrabold text-emerald-700">
                         299k
                     </div>
 
-                    <ul class="mb-6 space-y-2 text-sm text-emerald-700">
-                        <li>✅ Full prompt ảnh + chuyển động</li>
+                    <ul class="mb-8 space-y-3 text-left text-emerald-800">
+                        <li>✅ Full prompt ảnh + chuyển động</li>
                         <li>✅ Copy không giới hạn</li>
-                        <li>✅ Update prompt mới vĩnh viễn</li>
+                        <li>✅ Cập nhật prompt mới trọn đời</li>
                     </ul>
 
                     <a href="mailto:hungtd010302@gmail.com"
-                        class="block w-full rounded-xl bg-emerald-600 py-2 text-sm font-medium text-white hover:bg-emerald-700">
-                        Mua Ultimate
+                        class="block w-full rounded-xl bg-emerald-600 py-3 font-semibold text-white transition hover:bg-emerald-700">
+                        Mua Super
                     </a>
                 </div>
+
             </div>
         </section>
 
         <!-- Grid -->
-        <section id="grid" class="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <section id="grid" class="mt-5 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
             <div id="emptyState"
                 class="hidden rounded-2xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-600">
-                Chưa có prompt nào.
+                Nothing, bro.
             </div>
         </section>
 
@@ -186,67 +174,263 @@
             OK
         </div>
 
-        <!-- Modal -->
-        <div id="modal" class="fixed inset-0 z-50 hidden">
-            <div class="absolute inset-0 bg-black/40"></div>
+        <!-- MODAL THÊM / SỬA PROMPT -->
+        <div id="modal" class="fixed inset-0 z-[999] hidden">
 
+            <!-- Overlay -->
+            <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+
+            <!-- Modal box -->
             <div
-                class="absolute left-1/2 top-1/2 w-[92%] max-w-xl -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white p-4 shadow-xl">
-                <div class="flex items-center justify-between">
-                    <h4 id="modalHeading" class="text-sm font-extrabold">New prompt</h4>
-                    <button id="closeModal" class="rounded-xl px-2 py-1 text-sm hover:bg-slate-100">✕</button>
+                class="absolute left-1/2 top-1/2 flex max-h-[90vh] w-[94%] max-w-5xl -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-3xl bg-white shadow-2xl">
+
+                <!-- Header -->
+                <div class="flex shrink-0 items-center justify-between border-b border-slate-200 px-5 py-4">
+                    <h4 id="modalHeading" class="truncate pr-4 text-lg font-extrabold text-slate-900">
+                        Thêm mới prompt
+                    </h4>
+
+                    <button
+                        id="closeModal"
+                        type="button"
+                        class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-900">
+                        ✕
+                    </button>
                 </div>
 
-                <div class="mt-3 grid gap-3">
-                    <input id="modalTitle"
-                        class="rounded-2xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-4 focus:ring-blue-100"
-                        placeholder="Title" />
-                    <div class="relative w-full">
-                        <select id="modalType"
-                            class="h-11 w-full appearance-none rounded-2xl border border-slate-200 bg-white px-4 pr-10 text-sm outline-none focus:ring-4 focus:ring-blue-100">
-                            <option value="image">Image</option>
-                            <option value="motion">Motion</option>
-                        </select>
-                        <!-- icon dropdown -->
-                        <svg class="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500"
-                            viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd"
-                                d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 10.94l3.71-3.71a.75.75 0 1 1 1.06 1.06l-4.24 4.24a.75.75 0 0 1-1.06 0L5.21 8.29a.75.75 0 0 1 .02-1.08z"
-                                clip-rule="evenodd" />
-                        </svg>
+                <!-- Body: mobile cuộn toàn bộ, desktop chia 3/7 -->
+                <div class="grid min-h-0 flex-1 overflow-y-auto md:grid-cols-[3fr_7fr] md:overflow-hidden">
+
+                    <!-- Cột ảnh -->
+                    <div class="flex shrink-0 items-center justify-center bg-slate-100 p-4 md:min-h-0 md:self-stretch">
+
+                        <!-- Có ảnh thì hiện khung này -->
+                        <div
+                            id="modalImagePreviewWrap"
+                            class="relative hidden aspect-[9/16] w-[220px] max-w-full overflow-hidden rounded-2xl bg-black md:h-full md:max-h-[70vh] md:w-auto">
+
+                            <img
+                                id="modalImagePreview"
+                                src=""
+                                alt="Preview image"
+                                class="absolute inset-0 h-full w-full object-contain object-center"
+                            />
+
+                            <button
+                                id="btnRemoveImage"
+                                type="button"
+                                aria-label="Xóa ảnh"
+                                class="absolute right-3 top-3 z-10 flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-black/40 text-white shadow-lg backdrop-blur-sm transition hover:bg-red-500">
+
+                                <svg
+                                    width="16"
+                                    height="16"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    class="size-4 stroke-[2]">
+
+                                    <path d="M2.99561 7H20.9956" stroke="currentColor"></path>
+                                    <path d="M9.99561 11V17M13.9956 11V17" stroke="currentColor"></path>
+                                    <path
+                                        d="M8 6.5L8.68917 4.08792C8.87315 3.44397 9.46173 3 10.1315 3H13.8685C14.5383 3 15.1268 3.44397 15.3108 4.08792L16 6.5"
+                                        stroke="currentColor">
+                                    </path>
+                                    <path
+                                        d="M5 7L5.80098 18.2137C5.91312 19.7837 7.21944 21 8.79336 21H15.2066C16.7806 21 18.0869 19.7837 18.199 18.2137L19 7"
+                                        stroke="currentColor">
+                                    </path>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <!-- Không có ảnh thì hiện khung này -->
+                        <div
+                            id="modalImageEmpty"
+                            class="flex aspect-[9/16] w-[220px] max-w-full items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 text-slate-400 md:h-full md:max-h-[70vh] md:w-auto">
+
+                            <svg
+                                width="48"
+                                height="48"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                                class="stroke-[2]">
+
+                                <path
+                                    fill-rule="evenodd"
+                                    clip-rule="evenodd"
+                                    d="M14.0996 2.5C15.2032 2.5 16.0914 2.49903 16.8086 2.55762C17.5373 2.61716 18.1773 2.74327 18.7695 3.04492C19.7103 3.52429 20.4757 4.28966 20.9551 5.23047C21.2567 5.82266 21.3828 6.4627 21.4424 7.19141C21.501 7.90857 21.5 8.79681 21.5 9.90039V14.0996C21.5 15.2032 21.501 16.0914 21.4424 16.8086C21.3828 17.5373 21.2567 18.1773 20.9551 18.7695C20.4757 19.7103 19.7103 20.4757 18.7695 20.9551C18.1773 21.2567 17.5373 21.3828 16.8086 21.4424C16.0914 21.501 15.2032 21.5 14.0996 21.5H9.90039C8.79681 21.5 7.90857 21.501 7.19141 21.4424C6.4627 21.3828 5.82266 21.2567 5.23047 20.9551C4.28966 20.4757 3.52429 19.7103 3.04492 18.7695C2.74327 18.1773 2.61716 17.5373 2.55762 16.8086C2.49903 16.0914 2.5 15.2032 2.5 14.0996V9.90039C2.5 8.79681 2.49903 7.90857 2.55762 7.19141C2.61716 6.4627 2.74327 5.82266 3.04492 5.23047C3.52429 4.28966 4.28966 3.52429 5.23047 3.04492C5.82266 2.74327 6.4627 2.61716 7.19141 2.55762C7.90857 2.49903 8.79681 2.5 9.90039 2.5H14.0996ZM4.50586 14.4424C4.51159 14.915 4.52312 16.3068 4.55078 16.6455C4.60023 17.2507 4.69296 17.599 4.82715 17.8623C5.11472 18.4265 5.57347 18.8853 6.1377 19.1729C6.40105 19.307 6.74933 19.3998 7.35449 19.4492C7.97129 19.4996 8.76396 19.5 9.90039 19.5H14.0996C14.4595 19.5 15.7848 19.4968 16.0811 19.4951L7.95899 11.373L4.50586 14.4424ZM15 7C13.8954 7 13 7.89543 13 9C13 10.1046 13.8954 11 15 11C16.1046 11 17 10.1046 17 9C17 7.89543 16.1046 7 15 7Z"
+                                    fill="currentColor">
+                                </path>
+                            </svg>
+                        </div>
+
                     </div>
-                    <textarea id="modalText"
-                        class="min-h-[180px] rounded-2xl border border-slate-200 p-3 text-sm leading-6 outline-none focus:ring-4 focus:ring-blue-100"
-                        placeholder="Prompt text..."></textarea>
-                </div>
 
-                <div class="mt-4 flex gap-2">
-                    <button id="saveModal" type="button"
-                        class="flex-1 rounded-2xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-blue-700">
-                        Save
-                    </button>
-                    <button id="cancelModal" type="button"
-                        class="rounded-2xl px-4 py-2.5 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50">
-                        Cancel
-                    </button>
+                    <!-- Cột form -->
+                    <div class="min-h-0 bg-white p-5 md:overflow-y-auto">
+
+                        <div class="grid gap-4">
+
+                            <div>
+                                <label for="modalTitle" class="mb-1.5 block text-xs font-bold text-slate-600">
+                                    Tiêu đề
+                                </label>
+
+                                <input
+                                    id="modalTitle"
+                                    class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:ring-4 focus:ring-blue-100"
+                                    placeholder="Tiêu đề prompt"
+                                />
+                            </div>
+
+                            <div>
+                                <label for="modalType" class="mb-1.5 block text-xs font-bold text-slate-600">
+                                    Loại prompt
+                                </label>
+
+                                <div class="relative">
+                                    <select
+                                        id="modalType"
+                                        class="h-12 w-full appearance-none rounded-2xl border border-slate-200 bg-white px-4 pr-10 text-sm outline-none focus:ring-4 focus:ring-blue-100">
+
+                                        <option value="image">Ảnh</option>
+                                        <option value="motion">Chuyển động</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="mb-1.5 block text-xs font-bold text-slate-600">
+                                    Ảnh minh họa
+                                </label>
+
+                                <label
+                                    for="modalImage"
+                                    class="flex h-12 w-full cursor-pointer items-center justify-center rounded-2xl border border-dashed border-blue-300 bg-blue-50 text-sm font-semibold text-blue-700 transition hover:bg-blue-100">
+                                    📷 Chọn ảnh
+                                </label>
+
+                                <input
+                                    id="modalImage"
+                                    type="file"
+                                    accept="image/png,image/jpeg,image/webp"
+                                    class="hidden"
+                                />
+                            </div>
+
+                            <div>
+                                <label for="modalText" class="mb-1.5 block text-xs font-bold text-slate-600">
+                                    Nội dung prompt
+                                </label>
+
+                                <textarea
+                                    id="modalText"
+                                    class="min-h-[150px] w-full resize-y rounded-2xl border border-slate-200 p-4 text-sm leading-7 outline-none focus:ring-4 focus:ring-blue-100"
+                                    placeholder="Nội dung prompt..."></textarea>
+                            </div>
+                        </div>
+
+                        <div class="mt-5 pb-5 md:pb-0 flex gap-2">
+                            <button
+                                id="saveModal"
+                                type="button"
+                                class="flex-1 rounded-2xl bg-blue-600 px-4 py-3 text-sm font-bold text-white hover:bg-blue-700">
+                                Lưu
+                            </button>
+
+                            <button
+                                id="cancelModal"
+                                type="button"
+                                class="rounded-2xl px-5 py-3 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-100">
+                                Hủy
+                            </button>
+                        </div>
+
+                    </div>
                 </div>
             </div>
         </div>
     </main>
 
     <!-- Modal View Prompt -->
-    <div id="viewModal" class="fixed inset-0 z-50 hidden">
-        <div class="absolute inset-0 bg-black/40"></div>
+    <div id="viewModal" class="fixed inset-0 z-[999] hidden">
 
+        <!-- Overlay -->
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+
+        <!-- Modal box -->
         <div
-            class="absolute left-1/2 top-1/2 w-[92%] max-w-2xl -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white p-5 shadow-xl">
-            <div class="flex items-center justify-between mb-3">
-                <h4 id="viewTitle" class="text-base font-extrabold">Prompt</h4>
-                <button id="closeViewModal" class="rounded-xl px-2 py-1 hover:bg-slate-100">✕</button>
+            class="absolute left-1/2 top-1/2 w-[94%] max-w-5xl -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-3xl bg-white shadow-2xl">
+
+            <!-- Header -->
+            <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+                <h4 id="viewTitle" class="truncate pr-4 text-lg font-extrabold text-slate-900">
+                    Prompt
+                </h4>
+
+                <button
+                    id="closeViewModal"
+                    type="button"
+                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-900">
+                    ✕
+                </button>
             </div>
 
-            <pre id="viewContent"
-                class="max-h-[60vh] overflow-y-auto whitespace-pre-wrap rounded-xl bg-slate-50 p-4 text-sm leading-6 text-slate-800"></pre>
+            <!-- Ảnh trái + nội dung phải -->
+            <div class="grid max-h-[82vh] overflow-hidden md:grid-cols-[3fr_7fr]">
+
+                <!-- Ảnh bên trái -->
+                <div class="flex min-h-[320px] self-stretch items-center justify-center bg-slate-100 p-4 md:min-h-0">
+
+                    <!-- Khung ảnh: chỉ hiện khi có ảnh -->
+                    <div
+                        id="viewImageWrap"
+                        class="hidden aspect-[9/16] h-full max-h-[74vh] w-auto overflow-hidden rounded-2xl bg-black">
+
+                        <img
+                            id="viewImage"
+                            src=""
+                            alt="Prompt image"
+                            class="h-full w-full object-contain object-center"
+                        />
+                    </div>
+
+                    <!-- Chỉ hiện khi không có ảnh -->
+                    <div
+                        id="viewImageEmpty"
+                        class="hidden aspect-[9/16] h-full max-h-[74vh] w-auto items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 text-slate-400">
+
+                        <svg
+                            width="48"
+                            height="48"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="stroke-[2]">
+
+                            <path
+                                fill-rule="evenodd"
+                                clip-rule="evenodd"
+                                d="M14.0996 2.5C15.2032 2.5 16.0914 2.49903 16.8086 2.55762C17.5373 2.61716 18.1773 2.74327 18.7695 3.04492C19.7103 3.52429 20.4757 4.28966 20.9551 5.23047C21.2567 5.82266 21.3828 6.4627 21.4424 7.19141C21.501 7.90857 21.5 8.79681 21.5 9.90039V14.0996C21.5 15.2032 21.501 16.0914 21.4424 16.8086C21.3828 17.5373 21.2567 18.1773 20.9551 18.7695C20.4757 19.7103 19.7103 20.4757 18.7695 20.9551C18.1773 21.2567 17.5373 21.3828 16.8086 21.4424C16.0914 21.501 15.2032 21.5 14.0996 21.5H9.90039C8.79681 21.5 7.90857 21.501 7.19141 21.4424C6.4627 21.3828 5.82266 21.2567 5.23047 20.9551C4.28966 20.4757 3.52429 19.7103 3.04492 18.7695C2.74327 18.1773 2.61716 17.5373 2.55762 16.8086C2.49903 16.0914 2.5 15.2032 2.5 14.0996V9.90039C2.5 8.79681 2.49903 7.90857 2.55762 7.19141C2.61716 6.4627 2.74327 5.82266 3.04492 5.23047C3.52429 4.28966 4.28966 3.52429 5.23047 3.04492C5.82266 2.74327 6.4627 2.61716 7.19141 2.55762C7.90857 2.49903 8.79681 2.5 9.90039 2.5H14.0996ZM4.50586 14.4424C4.51159 14.915 4.52312 16.3068 4.55078 16.6455C4.60023 17.2507 4.69296 17.599 4.82715 17.8623C5.11472 18.4265 5.57347 18.8853 6.1377 19.1729C6.40105 19.307 6.74933 19.3998 7.35449 19.4492C7.97129 19.4996 8.76396 19.5 9.90039 19.5H14.0996C14.4595 19.5 15.7848 19.4968 16.0811 19.4951L7.95899 11.373L4.50586 14.4424ZM15 7C13.8954 7 13 7.89543 13 9C13 10.1046 13.8954 11 15 11C16.1046 11 17 10.1046 17 9C17 7.89543 16.1046 7 15 7Z"
+                                fill="currentColor">
+                            </path>
+                        </svg>
+                    </div>
+
+                </div>
+
+                <!-- Nội dung bên phải -->
+                <div class="min-h-[320px] overflow-hidden bg-white p-5 md:min-h-0">
+
+                    <pre
+                        id="viewContent"
+                        class="h-full max-h-[74vh] overflow-y-auto whitespace-pre-wrap break-words rounded-2xl bg-slate-50 p-5 text-sm leading-7 text-slate-700"></pre>
+
+                </div>
+
+            </div>
         </div>
     </div>
 
@@ -262,7 +446,7 @@
 
             <div class="relative flex items-center">
                 <h3 class="absolute left-1/2 -translate-x-1/2 text-normal uppercase font-extrabold">
-                    Login
+                    Đăng nhập
                 </h3>
                 <button id="closeLoginModal" class="ml-auto rounded-lg px-2 py-1 text-sm hover:bg-slate-100">
                     ✕
@@ -278,7 +462,7 @@
                 </div>
 
                 <div>
-                    <label class="mb-1 block text-xs font-semibold text-slate-600">Password</label>
+                    <label class="mb-1 block text-xs font-semibold text-slate-600">Mật khẩu</label>
                     <input id="password" type="password"
                         class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:ring-4 focus:ring-blue-100"
                         placeholder="••••••••" />
@@ -293,7 +477,7 @@
     </div>
 
     <a href="#" id="btnTop"
-        class="fixed hidden bottom-6 right-6 z-[999] grid h-12 w-12 place-items-center rounded-full shadow-lg hover:bg-slate-800 active:translate-y-px">
+        class="fixed hidden bottom-6 right-6 z-[99] grid h-12 w-12 place-items-center rounded-full shadow-lg hover:bg-slate-800 active:translate-y-px">
         <svg viewBox="0 0 1024 1024" width="24px" class="icon" xmlns="http://www.w3.org/2000/svg" fill="#000000">
             <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
             <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>

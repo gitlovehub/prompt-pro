@@ -40,6 +40,8 @@ const state = {
     copyScore: new Map(), // session-only popularity
     lastCopiedAt: new Map(),
     authRefreshing: false,
+    selectedImage: null,
+    removeImage: false,
 };
 
 // ========================= DOM CACHE =========================
@@ -70,6 +72,9 @@ const dom = {
     viewModal: document.getElementById("viewModal"),
     viewTitle: document.getElementById("viewTitle"),
     viewContent: document.getElementById("viewContent"),
+    viewImage: document.getElementById("viewImage"),
+    viewImageWrap: document.getElementById("viewImageWrap"),
+    viewImageEmpty: document.getElementById("viewImageEmpty"),
     closeViewModal: document.getElementById("closeViewModal"),
     btnTop: document.getElementById("btnTop"),
     pricingSection: document.getElementById("pricingSection"),
@@ -77,6 +82,11 @@ const dom = {
     emailInput: document.getElementById("email"),
     passwordInput: document.getElementById("password"),
     pricingLink: document.getElementById("pricingLink"),
+    modalImage: document.getElementById("modalImage"),
+    modalImagePreview: document.getElementById("modalImagePreview"),
+    modalImagePreviewWrap: document.getElementById("modalImagePreviewWrap"),
+    modalImageEmpty: document.getElementById("modalImageEmpty"),
+    btnRemoveImage: document.getElementById("btnRemoveImage"),
 };
 
 // ========================= DATA LAYER =========================
@@ -276,9 +286,16 @@ function setupEventListeners() {
     // New prompt (admin)
     dom.btnNew.addEventListener("click", () => {
         if (!state.isAdmin)
-            return showToast(dom.toast, "Only admin can create prompts");
+            return showToast(dom.toast, "Only admin can create!");
         state.editingId = null;
         state.originalPromptSnapshot = null;
+        state.selectedImage = null;
+        state.removeImage = false;
+
+        dom.modalImage.value = "";
+
+        clearModalImagePreview();
+
         openModalCreate({
             modalEl: dom.modal,
             headingEl: dom.modalHeading,
@@ -287,6 +304,20 @@ function setupEventListeners() {
             textEl: dom.modalText,
         });
         document.body.style.overflow = "hidden";
+    });
+
+    dom.modalImage.addEventListener("change", handleImageSelected);
+
+    dom.btnRemoveImage.addEventListener("click", () => {
+
+        revokeSelectedImagePreview();
+
+        state.selectedImage = null;
+        state.removeImage = true;
+
+        dom.modalImage.value = "";
+
+        clearModalImagePreview();
     });
 
     // Card actions (delegated)
@@ -325,6 +356,14 @@ function setupEventListeners() {
             filterTypeEl: dom.filterType,
         }),
     );
+
+    document.addEventListener("click", (e) => {
+        if (e.target.closest(".card-menu-wrap")) return;
+
+        document.querySelectorAll(".card-menu").forEach((menu) => {
+            menu.classList.add("hidden");
+        });
+    });
 
     // Scroll to top
     window.addEventListener("scroll", () =>
@@ -385,46 +424,263 @@ function closeLoginModal() {
 }
 
 function closePromptModal() {
+    revokeSelectedImagePreview();
+
     closeModal(dom.modal);
+
+    state.selectedImage = null;
+
+    if (dom.modalImage) {
+        dom.modalImage.value = "";
+    }
+
+    clearModalImagePreview();
+
     document.body.style.overflow = "auto";
 }
 
+function showModalImagePreview(imageUrl) {
+    if (!imageUrl) {
+        clearModalImagePreview();
+        return;
+    }
+
+    dom.modalImagePreview.src = imageUrl;
+    dom.modalImagePreviewWrap.classList.remove("hidden");
+    dom.modalImageEmpty.classList.add("hidden");
+}
+
+function clearModalImagePreview() {
+    dom.modalImagePreview.removeAttribute("src");
+    dom.modalImagePreviewWrap.classList.add("hidden");
+    dom.modalImageEmpty.classList.remove("hidden");
+}
+
+function revokeSelectedImagePreview() {
+    const currentSrc = dom.modalImagePreview?.src || "";
+
+    if (currentSrc.startsWith("blob:")) {
+        URL.revokeObjectURL(currentSrc);
+    }
+}
+
+function handleImageSelected(e) {
+    const file = e.target.files?.[0];
+
+    if (!file) {
+        state.selectedImage = null;
+
+        const oldImageUrl =
+            state.originalPromptSnapshot?.image_url || "";
+
+        if (oldImageUrl) {
+            showModalImagePreview(oldImageUrl);
+        } else {
+            clearModalImagePreview();
+        }
+
+        return;
+    }
+
+    const allowedTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/webp",
+    ];
+
+    if (!allowedTypes.includes(file.type)) {
+        showToast(dom.toast, "Chỉ hỗ trợ ảnh JPG, PNG hoặc WEBP");
+
+        e.target.value = "";
+        state.selectedImage = null;
+        return;
+    }
+
+    const maxSize = 10 * 1024 * 1024;
+
+    if (file.size > maxSize) {
+        showToast(dom.toast, "Ảnh không được vượt quá 10 MB");
+
+        e.target.value = "";
+        state.selectedImage = null;
+        return;
+    }
+
+    revokeSelectedImagePreview();
+
+    state.selectedImage = file;
+
+    const previewUrl = URL.createObjectURL(file);
+
+    showModalImagePreview(previewUrl);
+
+    showToast(dom.toast, "Đã chọn ảnh ✅");
+}
+
+async function uploadPromptImage(file) {
+    if (!file) return null;
+
+    // Giới hạn dung lượng ảnh: tối đa 10 MB
+    const maxSize = 10 * 1024 * 1024;
+
+    if (file.size > maxSize) {
+        throw new Error("Ảnh không được vượt quá 10 MB");
+    }
+
+    const allowedTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/webp",
+    ];
+
+    if (!allowedTypes.includes(file.type)) {
+        throw new Error("Chỉ hỗ trợ ảnh JPG, PNG hoặc WEBP");
+    }
+
+    const originalExtension =
+        file.name.split(".").pop()?.toLowerCase() || "jpg";
+
+    const safeExtension = ["jpg", "jpeg", "png", "webp"].includes(
+        originalExtension,
+    )
+        ? originalExtension
+        : "jpg";
+
+    const uniqueName =
+        typeof crypto.randomUUID === "function"
+            ? crypto.randomUUID()
+            : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+    // Mỗi người dùng có một thư mục riêng
+    const filePath = `${state.user.id}/${uniqueName}.${safeExtension}`;
+
+    const { error: uploadError } = await state.supabase.storage
+        .from("prompt-images")
+        .upload(filePath, file, {
+            cacheControl: "3600",
+            upsert: false,
+            contentType: file.type,
+        });
+
+    if (uploadError) {
+        console.error("Upload image error:", uploadError);
+        throw new Error(uploadError.message || "Không thể tải ảnh lên");
+    }
+
+    const { data } = state.supabase.storage
+        .from("prompt-images")
+        .getPublicUrl(filePath);
+
+    if (!data?.publicUrl) {
+        throw new Error("Không lấy được đường dẫn ảnh");
+    }
+
+    return data.publicUrl;
+}
+
 async function handleSavePrompt() {
-    if (!state.isAdmin) return showToast(dom.toast, "Only admin");
+    if (!state.isAdmin) {
+        return showToast(dom.toast, "Only admin");
+    }
 
     const title = dom.modalTitle.value.trim();
     const type = dom.modalType.value;
     const prompt_text = dom.modalText.value.trim();
 
-    if (state.editingId && state.originalPromptSnapshot) {
-        const noChange =
-            title === state.originalPromptSnapshot.title &&
-            type === state.originalPromptSnapshot.type &&
-            prompt_text === state.originalPromptSnapshot.prompt_text;
-
-        if (noChange) return showToast(dom.toast, "No changes to save");
+    if (!title || !prompt_text) {
+        return showToast(
+            dom.toast,
+            "Title and prompt text are required",
+        );
     }
 
-    if (!title || !prompt_text)
-        return showToast(dom.toast, "Title and prompt text are required");
+    // Khi edit, giữ lại ảnh cũ nếu không chọn ảnh mới
+    let image_url = state.originalPromptSnapshot?.image_url ?? null;
 
-    const payload = { title, type, prompt_text };
-
-    let error;
-    if (!state.editingId) {
-        ({ error } = await state.supabase.from("prompts").insert(payload));
-        showToast(dom.toast, error ? "Create failed" : "Created ✅");
-    } else {
-        ({ error } = await state.supabase
-            .from("prompts")
-            .update(payload)
-            .eq("id", state.editingId));
-        showToast(dom.toast, error ? "Update failed" : "Saved ✅");
+    // Nếu người dùng bấm nút thùng rác thì cập nhật ảnh thành null
+    if (state.removeImage) {
+        image_url = null;
     }
 
-    if (!error) {
+    const hasTextChanges =
+        !state.editingId ||
+        !state.originalPromptSnapshot ||
+        title !== state.originalPromptSnapshot.title ||
+        type !== state.originalPromptSnapshot.type ||
+        prompt_text !==
+            state.originalPromptSnapshot.prompt_text;
+
+    const hasNewImage = Boolean(state.selectedImage);
+    const hasImageRemoval = Boolean(state.removeImage);
+
+    if (
+        state.editingId &&
+        !hasTextChanges &&
+        !hasNewImage &&
+        !hasImageRemoval
+    ) {
+        return showToast(dom.toast, "No changes to save");
+    }
+
+    const originalButtonText = dom.saveModal.textContent;
+
+    try {
+        dom.saveModal.disabled = true;
+        dom.saveModal.textContent = hasNewImage
+            ? "Uploading..."
+            : "Saving...";
+
+        if (state.selectedImage) {
+            image_url = await uploadPromptImage(
+                state.selectedImage,
+            );
+        }
+
+        const payload = {
+            title,
+            type,
+            prompt_text,
+            image_url,
+        };
+
+        let error;
+
+        if (!state.editingId) {
+            ({ error } = await state.supabase
+                .from("prompts")
+                .insert(payload));
+        } else {
+            ({ error } = await state.supabase
+                .from("prompts")
+                .update(payload)
+                .eq("id", state.editingId));
+        }
+
+        if (error) {
+            console.error("Save prompt error:", error);
+            throw new Error(error.message);
+        }
+
+        showToast(
+            dom.toast,
+            state.editingId ? "Saved ✅" : "Created ✅",
+        );
+
+        state.selectedImage = null;
+        dom.modalImage.value = "";
+
         closePromptModal();
         await loadPrompts();
+    } catch (error) {
+        console.error("handleSavePrompt error:", error);
+
+        showToast(
+            dom.toast,
+            error.message || "Save failed",
+        );
+    } finally {
+        dom.saveModal.disabled = false;
+        dom.saveModal.textContent = originalButtonText;
     }
 }
 
@@ -438,9 +694,49 @@ async function handleCardAction(e) {
     const action = btn.dataset.action;
     const id = card.dataset.id;
 
+    if (action === "menu") {
+        const currentMenu = card.querySelector(".card-menu");
+
+        document.querySelectorAll(".card-menu").forEach((menu) => {
+            if (menu !== currentMenu) {
+                menu.classList.add("hidden");
+            }
+        });
+
+        currentMenu?.classList.toggle("hidden");
+        return;
+    }
+
+    // Đóng menu sau khi chọn Xem, Sửa hoặc Xóa
+    card.querySelector(".card-menu")?.classList.add("hidden");
+
     if (action === "view") {
-        dom.viewTitle.textContent = card.dataset.title || "Prompt";
-        dom.viewContent.textContent = card.dataset.text || "";
+        const imageUrl = (card.dataset.image || "").trim();
+
+        dom.viewTitle.textContent =
+            card.dataset.title || "Prompt";
+
+        dom.viewContent.textContent =
+            card.dataset.text || "";
+
+        if (imageUrl) {
+            // Có ảnh: hiện cả khung ảnh
+            dom.viewImage.src = imageUrl;
+
+            dom.viewImageWrap.classList.remove("hidden");
+
+            dom.viewImageEmpty.classList.add("hidden");
+            dom.viewImageEmpty.classList.remove("flex");
+        } else {
+            // Không có ảnh: ẩn khung ảnh, hiện SVG
+            dom.viewImage.removeAttribute("src");
+
+            dom.viewImageWrap.classList.add("hidden");
+
+            dom.viewImageEmpty.classList.remove("hidden");
+            dom.viewImageEmpty.classList.add("flex");
+        }
+
         dom.viewModal.classList.remove("hidden");
         document.body.style.overflow = "hidden";
         return;
@@ -488,7 +784,18 @@ async function handleCardAction(e) {
             title: prompt.title ?? "",
             type: prompt.type ?? "",
             prompt_text: prompt.prompt_text ?? "",
+            image_url: prompt.image_url ?? null,
         };
+
+        state.selectedImage = null;
+        state.removeImage = false;
+        dom.modalImage.value = "";
+
+        if (prompt.image_url) {
+            showModalImagePreview(prompt.image_url);
+        } else {
+            clearModalImagePreview();
+        }
 
         openModalEdit({
             modalEl: dom.modal,
@@ -502,7 +809,7 @@ async function handleCardAction(e) {
     }
 
     if (action === "delete") {
-        if (!confirm("Delete this prompt?")) return;
+        if (!confirm("Bạn có chắc chắn muốn xóa? Không thể hoàn tác hành động này.")) return;
         const { error } = await state.supabase
             .from("prompts")
             .delete()
