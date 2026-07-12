@@ -1033,7 +1033,7 @@ async function handleCardAction(e) {
 
     if (action === "delete") {
         const confirmed = confirm(
-            "Bạn có chắc chắn muốn xóa prompt này 🤔?\nHành động này không thể hoàn tác.",
+            "Bạn có chắc chắn muốn xóa prompt này?\nHành động này không thể hoàn tác. 🤔",
         );
 
         if (!confirmed) return;
