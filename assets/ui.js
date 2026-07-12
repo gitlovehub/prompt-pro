@@ -155,12 +155,12 @@ export function renderPrompts({
                         </button>
 
                         <div
-                            class="card-menu absolute right-0 top-[40px] hidden w-36 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+                            class="card-menu absolute right-0 top-[40px] hidden w-24 sm:w-32 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
 
                             <button
                                 type="button"
                                 data-action="view"
-                                class="flex w-full items-center gap-2 bg-white px-4 py-2.5 text-left text-sm font-semibold text-slate-700 transition hover:bg-slate-200 hover:text-slate-950">
+                                class="flex w-full items-center gap-2 bg-white p-2 sm:px-4 sm:py-2.5 text-left text-sm font-semibold text-slate-700 transition hover:bg-slate-200 hover:text-slate-950">
                                 <span>👁️</span>
                                 <span>Xem</span>
                             </button>
