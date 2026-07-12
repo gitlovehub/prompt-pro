@@ -37,7 +37,7 @@ export function showToast(toastEl, msg = "OK") {
     clearTimeout(window.__toastTimer);
     window.__toastTimer = setTimeout(
         () => toastEl.classList.add("hidden"),
-        900,
+        2000,
     );
 }
 
@@ -119,7 +119,7 @@ export function renderPrompts({
 
             return `
                 <article
-                    class="prompt-card group relative h-[420px] overflow-hidden rounded-[28px] border border-white/60 bg-slate-200 shadow-xl shadow-slate-300/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
+                    class="prompt-card group relative h-[300px] overflow-hidden rounded-[20px] border border-white/60 bg-slate-200 shadow-lg transition-all duration-300 sm:h-[360px] sm:rounded-[24px] md:h-[420px] md:rounded-[28px] md:hover:shadow-2xl"
                     data-id="${escapeHtml(p.id)}"
                     data-type="${escapeHtml(p.type || "image")}"
                     data-title="${escapeHtml(p.title || "")}"
@@ -136,13 +136,13 @@ export function renderPrompts({
                     </div>
 
                     <!-- MENU 3 CHẤM -->
-                    <div class="card-menu-wrap absolute right-4 top-4 z-30">
+                    <div class="card-menu-wrap absolute right-2 top-2 sm:right-3 sm:top-3 md:right-4 md:top-4 z-30">
 
                         <button
                             type="button"
                             data-action="menu"
                             aria-label="Mở menu"
-                            class="flex h-11 w-11 items-center justify-center rounded-full border border-white/40 bg-black/35 text-2xl leading-none shadow-lg backdrop-blur-sm transition hover:bg-black/60">
+                            class="flex h-8 w-8 items-center justify-center rounded-full border border-white/40 bg-black/35 text-2xl leading-none shadow-lg backdrop-blur-sm transition hover:bg-black/60">
                             <svg
                                 class="pointer-events-none h-5 w-5 text-slate-200"
                                 viewBox="0 0 20 20"
@@ -155,12 +155,12 @@ export function renderPrompts({
                         </button>
 
                         <div
-                            class="card-menu absolute right-0 top-[52px] hidden w-36 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+                            class="card-menu absolute right-0 top-[40px] hidden w-36 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
 
                             <button
                                 type="button"
                                 data-action="view"
-                                class="flex w-full items-center gap-2 bg-white px-4 py-2.5 text-left text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-200 hover:text-slate-950">
+                                class="flex w-full items-center gap-2 bg-white px-4 py-2.5 text-left text-sm font-semibold text-slate-700 transition hover:bg-slate-200 hover:text-slate-950">
                                 <span>👁️</span>
                                 <span>Xem</span>
                             </button>
@@ -171,7 +171,7 @@ export function renderPrompts({
                                         <button
                                             type="button"
                                             data-action="edit"
-                                            class="flex w-full items-center gap-2 bg-white px-4 py-2.5 text-left text-sm font-semibold text-slate-700 transition-colors hover:bg-indigo-200 hover:text-indigo-700">
+                                            class="flex w-full items-center gap-2 bg-white px-4 py-2.5 text-left text-sm font-semibold text-slate-700 transition hover:bg-indigo-200 hover:text-indigo-700">
                                             <span>✏️</span>
                                             <span>Sửa</span>
                                         </button>
@@ -191,13 +191,13 @@ export function renderPrompts({
 
                     <!-- KHỐI NỘI DUNG BLUR -->
                     <div
-                        class="absolute inset-x-0 bottom-0 z-20 border border-white/25 bg-black/10 p-5 text-white shadow-2xl backdrop-blur-sm">
+                        class="absolute inset-x-0 bottom-0 z-20 border border-white/25 bg-black/10 p-3 sm:p-4 md:p-5 text-white shadow-2xl backdrop-blur-sm">
 
                         <!-- TÊN PROMPT -->
                         <h3
                             data-field="title"
                             data-raw="${escapeHtml(p.title || "Untitled")}"
-                            class="truncate text-sm font-extrabold text-white">
+                            class="line-clamp-2 text-xs font-extrabold text-white sm:text-sm truncate">
                             ${escapeHtml(p.title || "Untitled")}
                         </h3>
 
@@ -205,12 +205,12 @@ export function renderPrompts({
                         <p
                             data-field="text"
                             data-raw="${escapeHtml(previewRaw)}"
-                            class="mt-2 line-clamp-2 min-h-[44px] text-sm leading-[22px] text-white/80">
+                            class="mt-1 line-clamp-2 text-sm text-white/80">
                             ${escapeHtml(previewRaw)}
                         </p>
 
                         <!-- THỜI GIAN + TAG -->
-                        <div class="mt-2 flex items-center justify-between gap-3">
+                        <div class="my-2 flex items-center justify-between gap-3">
 
                             <span class="truncate text-xs font-medium text-white/65">
                                 ${updated || "Chưa cập nhật"}
@@ -219,12 +219,12 @@ export function renderPrompts({
                             ${
                                 (p.type || "image").toLowerCase() === "motion"
                                     ? `
-                                        <span class="inline-flex items-center rounded-full border border-amber-300/50 bg-amber-400/20 px-3 py-1 text-[11px] font-bold text-amber-100 backdrop-blur-md">
+                                        <span class="inline-flex items-center rounded-full border border-amber-300/50 bg-amber-400/20 px-2 py-0.5 text-[9px] sm:px-3 sm:py-1 sm:text-[11px] font-bold text-amber-100 backdrop-blur-md">
                                             MOTION
                                         </span>
                                     `
                                     : `
-                                        <span class="inline-flex items-center rounded-full border border-emerald-300/50 bg-emerald-400/20 px-3 py-1 text-[11px] font-bold text-emerald-100 backdrop-blur-md">
+                                        <span class="inline-flex items-center rounded-full border border-emerald-300/50 bg-emerald-400/20 px-2 py-0.5 text-[9px] sm:px-3 sm:py-1 sm:text-[11px] font-bold text-emerald-100 backdrop-blur-md">
                                             IMAGE
                                         </span>
                                     `
@@ -235,7 +235,7 @@ export function renderPrompts({
                         <button
                             type="button"
                             data-action="copy"
-                            class="mt-4 w-full rounded-2xl bg-white px-4 py-3 text-base font-extrabold text-slate-950 shadow-lg transition hover:bg-slate-100 active:scale-[0.98]">
+                            class="w-full rounded-xl bg-white px-2 py-2 text-xs font-extrabold text-slate-950 shadow-lg transition hover:bg-slate-100 active:scale-[0.98] sm:mt-1 sm:rounded-2xl sm:px-4 sm:py-3 sm:text-sm md:text-base">
                             Copy
                         </button>
 

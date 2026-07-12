@@ -24,7 +24,6 @@ import {
 const CONFIG = {
     SUPABASE_URL: "https://nwzoeapjzsugdtohcfyx.supabase.co",
     SUPABASE_ANON_KEY: "sb_publishable_TsL3PRhhpmnVjme70W7wwg_cC4lWs8K",
-    ADMIN_UID: "154151c6-65f5-45b6-8169-378d14c1ba94",
 };
 
 // ========================= STATE =========================
@@ -50,9 +49,12 @@ const dom = {
     emptyState: document.getElementById("emptyState"),
     toast: document.getElementById("toast"),
     searchBar: document.getElementById("searchBar"),
-    planBadge: document.getElementById("planBadge"),
     searchInput: document.getElementById("searchInput"),
     filterType: document.getElementById("filterType"),
+    filterDropdown: document.getElementById("filterDropdown"),
+    filterBtn: document.getElementById("filterBtn"),
+    filterMenu: document.getElementById("filterMenu"),
+    filterItems: document.querySelectorAll("[data-filter-value]"),
     btnLogin: document.getElementById("btnLogin"),
     btnLogout: document.getElementById("btnLogout"),
     btnShowLogin: document.getElementById("btnShowLogin"),
@@ -93,30 +95,20 @@ const dom = {
 async function loadPrompts() {
     let query;
 
-    // 🔓 Ultimate & Admin: realtime
-    if (state.isAdmin || state.userPlan === "ultimate") {
+    if (state.isAdmin || state.userPlan === "super") {
         query = state.supabase
             .from("prompts")
             .select("*")
             .order("updated_at", { ascending: false });
     }
-    // 🧊 Pro: bản cứng
-    else if (state.userPlan === "pro") {
-        query = state.supabase
-            .from("prompts_copy")
-            .select("*")
-            .eq("user_id", state.user.id)
-            .order("original_created_at", { ascending: false });
-    }
+
     // 🆓 Free: không load
     else {
         state.prompts = [];
-        renderPrompts({
-            gridEl: dom.grid,
-            emptyStateEl: dom.emptyState,
-            list: [],
-            isAdmin: false,
-        });
+        state.defaultPrompts = [];
+        dom.searchBar.classList.add("hidden");
+        dom.pricingSection.classList.remove("hidden");
+        renderPrompts({ gridEl: dom.grid, emptyStateEl: dom.emptyState, list: [], isAdmin: false });
         return;
     }
 
@@ -124,7 +116,7 @@ async function loadPrompts() {
 
     if (error) {
         console.error("loadPrompts error:", error);
-        showToast(dom.toast, "Failed to load prompts");
+        showToast(dom.toast, "⚠️ Không thể tải danh sách prompt");
         return;
     }
 
@@ -145,19 +137,67 @@ async function loadPrompts() {
 }
 
 function getSortedPrompts() {
-    const orderIndex = new Map(state.defaultPrompts.map((p, i) => [p.id, i]));
+    const selectedType = dom.filterType?.value || "all";
+
+    const orderIndex = new Map(
+        state.defaultPrompts.map((prompt, index) => [
+            String(prompt.id),
+            index,
+        ]),
+    );
 
     return [...state.prompts].sort((a, b) => {
-        const scoreA = state.copyScore.get(a.id) || 0;
-        const scoreB = state.copyScore.get(b.id) || 0;
-        if (scoreB !== scoreA) return scoreB - scoreA;
+        const idA = String(a.id);
+        const idB = String(b.id);
 
-        const timeA = state.lastCopiedAt.get(a.id) || 0;
-        const timeB = state.lastCopiedAt.get(b.id) || 0;
-        if (timeB !== timeA) return timeB - timeA;
+        // 1. Prompt vừa copy gần nhất luôn được ưu tiên lên đầu
+        const copiedTimeA =
+            state.lastCopiedAt.get(idA) || 0;
 
+        const copiedTimeB =
+            state.lastCopiedAt.get(idB) || 0;
+
+        if (copiedTimeB !== copiedTimeA) {
+            return copiedTimeB - copiedTimeA;
+        }
+
+        // 2. Nếu đang chọn "Tất cả":
+        // các prompt chưa copy được xếp theo thời gian mới nhất
+        if (selectedType === "all") {
+            const timeA = new Date(
+                a.updated_at ||
+                a.original_created_at ||
+                a.created_at ||
+                0,
+            ).getTime();
+
+            const timeB = new Date(
+                b.updated_at ||
+                b.original_created_at ||
+                b.created_at ||
+                0,
+            ).getTime();
+
+            return timeB - timeA;
+        }
+
+        // 3. Với bộ lọc Ảnh / Chuyển động:
+        // nếu chưa xác định được bằng lần copy gần nhất,
+        // ưu tiên số lần copy
+        const scoreA =
+            state.copyScore.get(idA) || 0;
+
+        const scoreB =
+            state.copyScore.get(idB) || 0;
+
+        if (scoreB !== scoreA) {
+            return scoreB - scoreA;
+        }
+
+        // 4. Cuối cùng giữ thứ tự ban đầu
         return (
-            (orderIndex.get(a.id) ?? 999999) - (orderIndex.get(b.id) ?? 999999)
+            (orderIndex.get(idA) ?? 999999) -
+            (orderIndex.get(idB) ?? 999999)
         );
     });
 }
@@ -186,7 +226,7 @@ async function refreshAuthUI() {
         await handleLoggedInUser();
     } catch (err) {
         console.error("Auth error:", err);
-        showToast(dom.toast, "Auth service unavailable");
+        showToast(dom.toast, "⚠️ Không thể kết nối dịch vụ đăng nhập");
     } finally {
         state.authRefreshing = false;
     }
@@ -198,7 +238,6 @@ function resetGuestUI() {
     dom.btnShowLogin.classList.remove("hidden");
     dom.btnLogout.classList.add("hidden");
     dom.btnNew.classList.add("hidden");
-    dom.planBadge?.classList.add("hidden");
     dom.pricingSection.classList.remove("hidden");
     dom.searchBar.classList.add("hidden");
     dom.pricingLink?.classList.add("hidden");
@@ -219,36 +258,10 @@ async function handleLoggedInUser() {
     if (error || !profile) {
         state.userPlan = "free";
         state.isAdmin = false;
-        showToast(dom.toast, "Profile not found, treated as Free");
+        showToast(dom.toast, "⚠️ Không tìm thấy thông tin tài khoản, đang sử dụng gói Free");
     } else {
         state.userPlan = profile.plan || "free";
         state.isAdmin = profile.role === "admin";
-    }
-
-    // ---- PLAN BADGE ----
-    dom.planBadge.classList.add("hidden");
-
-    if (!state.isAdmin) {
-        if (state.userPlan === "free") {
-            dom.planBadge.textContent = "Free";
-            dom.planBadge.className =
-                "inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-sm font-medium text-slate-600 inset-ring inset-ring-slate-600/10";
-            dom.planBadge.classList.remove("hidden");
-        } else if (state.userPlan === "pro") {
-            dom.pricingLink?.classList.remove("hidden");
-            dom.planBadge.textContent = "Pro";
-            dom.planBadge.className =
-                "inline-flex items-center rounded-md bg-blue-100 px-2 py-1 text-sm font-medium text-blue-700 inset-ring inset-ring-blue-700/10";
-            dom.planBadge.classList.remove("hidden");
-        } else if (state.userPlan === "ultimate") {
-            dom.pricingLink?.classList.add("hidden");
-            dom.planBadge.textContent = "Ultimate";
-            dom.planBadge.className =
-                "inline-flex items-center rounded-md bg-emerald-100 px-2 py-1 text-sm font-medium text-emerald-700 inset-ring inset-ring-emerald-700/10";
-            dom.planBadge.classList.remove("hidden");
-        }
-    } else {
-        dom.pricingLink?.classList.remove("hidden");
     }
 
     // ---- ADMIN UI ----
@@ -286,7 +299,7 @@ function setupEventListeners() {
     // New prompt (admin)
     dom.btnNew.addEventListener("click", () => {
         if (!state.isAdmin)
-            return showToast(dom.toast, "Only admin can create!");
+            return showToast(dom.toast, "👮 Chỉ quản trị viên mới có thể thêm prompt");
         state.editingId = null;
         state.originalPromptSnapshot = null;
         state.selectedImage = null;
@@ -308,16 +321,24 @@ function setupEventListeners() {
 
     dom.modalImage.addEventListener("change", handleImageSelected);
 
-    dom.btnRemoveImage.addEventListener("click", () => {
-
+    dom.btnRemoveImage?.addEventListener("click", () => {
         revokeSelectedImagePreview();
 
         state.selectedImage = null;
-        state.removeImage = true;
 
-        dom.modalImage.value = "";
+        // Chỉ cần cập nhật null khi đang sửa prompt đã có ảnh
+        state.removeImage = Boolean(
+            state.editingId &&
+            state.originalPromptSnapshot?.image_url
+        );
+
+        if (dom.modalImage) {
+            dom.modalImage.value = "";
+        }
 
         clearModalImagePreview();
+
+        showToast(dom.toast, "✅ Đã xóa ảnh");
     });
 
     // Card actions (delegated)
@@ -337,11 +358,13 @@ function setupEventListeners() {
         dom.viewModal.classList.add("hidden");
         document.body.style.overflow = "auto";
     });
-    dom.viewModal.addEventListener(
-        "click",
-        (e) =>
-            e.target === dom.viewModal && dom.viewModal.classList.add("hidden"),
-    );
+
+    dom.viewModal.addEventListener("click", (e) => {
+        if (e.target !== dom.viewModal) return;
+
+        dom.viewModal.classList.add("hidden");
+        document.body.style.overflow = "auto";
+    });
 
     // Search
     dom.searchInput.addEventListener("input", () =>
@@ -350,19 +373,84 @@ function setupEventListeners() {
             filterTypeEl: dom.filterType,
         }),
     );
-    dom.filterType.addEventListener("change", () =>
-        applySearchFilter({
-            searchInputEl: dom.searchInput,
-            filterTypeEl: dom.filterType,
-        }),
-    );
+
+    dom.filterBtn?.addEventListener("click", (e) => {
+        e.stopPropagation();
+
+        const isOpening =
+            dom.filterMenu.classList.contains("hidden");
+
+        dom.filterMenu.classList.toggle("hidden");
+        dom.filterBtn.setAttribute(
+            "aria-expanded",
+            String(isOpening),
+        );
+    });
+
+    dom.filterItems.forEach((item) => {
+        item.addEventListener("click", () => {
+            const selectedValue =
+                item.dataset.filterValue || "all";
+
+            dom.filterType.value = selectedValue;
+
+            dom.filterMenu.classList.add("hidden");
+            dom.filterBtn.setAttribute(
+                "aria-expanded",
+                "false",
+            );
+
+            dom.filterItems.forEach((button) => {
+                button.classList.remove(
+                    "bg-blue-50",
+                    "text-blue-700",
+                );
+
+                button.classList.add("text-slate-700");
+            });
+
+            item.classList.remove("text-slate-700");
+
+            item.classList.add(
+                "bg-blue-50",
+                "text-blue-700",
+            );
+
+            // Render lại đúng thứ tự
+            renderPrompts({
+                gridEl: dom.grid,
+                emptyStateEl: dom.emptyState,
+                list: getSortedPrompts(),
+                isAdmin: state.isAdmin,
+            });
+
+            // Sau đó mới lọc card
+            applySearchFilter({
+                searchInputEl: dom.searchInput,
+                filterTypeEl: dom.filterType,
+            });
+        });
+    });
 
     document.addEventListener("click", (e) => {
-        if (e.target.closest(".card-menu-wrap")) return;
+        // Không đóng card menu khi click bên trong card menu
+        if (!e.target.closest(".card-menu-wrap")) {
+            document
+                .querySelectorAll(".card-menu")
+                .forEach((menu) => {
+                    menu.classList.add("hidden");
+                });
+        }
 
-        document.querySelectorAll(".card-menu").forEach((menu) => {
-            menu.classList.add("hidden");
-        });
+        // Không đóng filter khi click bên trong filter dropdown
+        if (!e.target.closest("#filterDropdown")) {
+            dom.filterMenu?.classList.add("hidden");
+
+            dom.filterBtn?.setAttribute(
+                "aria-expanded",
+                "false",
+            );
+        }
     });
 
     // Scroll to top
@@ -376,7 +464,7 @@ async function handleLogin() {
     const password = dom.passwordInput.value;
 
     if (!email || !password)
-        return showToast(dom.toast, "Please enter email & password");
+        return showToast(dom.toast, "⚠️ Vui lòng nhập email và mật khẩu");
 
     const { error } = await state.supabase.auth.signInWithPassword({
         email,
@@ -387,13 +475,13 @@ async function handleLogin() {
         showToast(
             dom.toast,
             error.message.includes("Invalid login")
-                ? "❌ Wrong email or password"
-                : "Login failed",
+                ? "❌ Email hoặc mật khẩu không chính xác"
+                : "😫 Đăng nhập thất bại",
         );
         return;
     }
 
-    showToast(dom.toast, "Logged in ✅");
+    showToast(dom.toast, "🎉 환영합니다");
     closeLoginModal();
     await state.supabase.auth.refreshSession();
     await refreshAuthUI();
@@ -401,7 +489,11 @@ async function handleLogin() {
 
 async function handleLogout() {
     await state.supabase.auth.signOut();
-    showToast(dom.toast, "Logged out");
+    showToast(dom.toast, "👋 Đã đăng xuất");
+    
+    if (dom.emailInput) dom.emailInput.value = "";
+    if (dom.passwordInput) dom.passwordInput.value = "";
+    
     await refreshAuthUI();
 }
 
@@ -415,8 +507,13 @@ function showLoginModal() {
 }
 
 function closeLoginModal() {
+    // Clear input để bảo mật
+    if (dom.emailInput) dom.emailInput.value = "";
+    if (dom.passwordInput) dom.passwordInput.value = "";
+
     dom.loginOverlay.classList.add("opacity-0");
     dom.loginBox.classList.add("opacity-0", "scale-95", "translate-y-6");
+    
     setTimeout(() => {
         dom.loginModal.classList.add("hidden");
         document.body.style.overflow = "auto";
@@ -428,7 +525,10 @@ function closePromptModal() {
 
     closeModal(dom.modal);
 
+    state.editingId = null;
+    state.originalPromptSnapshot = null;
     state.selectedImage = null;
+    state.removeImage = false;
 
     if (dom.modalImage) {
         dom.modalImage.value = "";
@@ -469,6 +569,7 @@ function handleImageSelected(e) {
 
     if (!file) {
         state.selectedImage = null;
+        state.removeImage = false;
 
         const oldImageUrl =
             state.originalPromptSnapshot?.image_url || "";
@@ -499,7 +600,7 @@ function handleImageSelected(e) {
     const maxSize = 10 * 1024 * 1024;
 
     if (file.size > maxSize) {
-        showToast(dom.toast, "Ảnh không được vượt quá 10 MB");
+        showToast(dom.toast, "🚧 Ảnh không được vượt quá 10 MB");
 
         e.target.value = "";
         state.selectedImage = null;
@@ -507,14 +608,65 @@ function handleImageSelected(e) {
     }
 
     revokeSelectedImagePreview();
-
+    
     state.selectedImage = file;
+    state.removeImage = false;
 
     const previewUrl = URL.createObjectURL(file);
 
     showModalImagePreview(previewUrl);
 
-    showToast(dom.toast, "Đã chọn ảnh ✅");
+    showToast(dom.toast, "✅ Đã chọn ảnh");
+}
+
+function getPromptImagePath(imageUrl) {
+    if (!imageUrl) return null;
+
+    const marker =
+        "/storage/v1/object/public/prompt-images/";
+
+    const index = imageUrl.indexOf(marker);
+
+    if (index === -1) {
+        console.warn(
+            "⚠️ Không nhận diện được đường dẫn ảnh:",
+            imageUrl,
+        );
+
+        return null;
+    }
+
+    const filePath = imageUrl.slice(
+        index + marker.length,
+    );
+
+    try {
+        return decodeURIComponent(filePath);
+    } catch {
+        return filePath;
+    }
+}
+
+async function deletePromptImage(imageUrl) {
+    const filePath = getPromptImagePath(imageUrl);
+
+    if (!filePath) return;
+
+    const { error } = await state.supabase.storage
+        .from("prompt-images")
+        .remove([filePath]);
+
+    if (error) {
+        console.error(
+            "❌ Không thể xóa ảnh khỏi Storage:",
+            error,
+        );
+
+        throw new Error(
+            error.message ||
+            "Không thể xóa ảnh khỏi kho lưu trữ",
+        );
+    }
 }
 
 async function uploadPromptImage(file) {
@@ -580,7 +732,7 @@ async function uploadPromptImage(file) {
 
 async function handleSavePrompt() {
     if (!state.isAdmin) {
-        return showToast(dom.toast, "Only admin");
+        return showToast(dom.toast, "👮 Chỉ quản trị viên mới có quyền thực hiện");
     }
 
     const title = dom.modalTitle.value.trim();
@@ -590,7 +742,7 @@ async function handleSavePrompt() {
     if (!title || !prompt_text) {
         return showToast(
             dom.toast,
-            "Title and prompt text are required",
+            "⚠️ Vui lòng nhập tiêu đề và nội dung prompt",
         );
     }
 
@@ -619,7 +771,7 @@ async function handleSavePrompt() {
         !hasNewImage &&
         !hasImageRemoval
     ) {
-        return showToast(dom.toast, "No changes to save");
+        return showToast(dom.toast, "😐 Không có thay đổi để lưu");
     }
 
     const originalButtonText = dom.saveModal.textContent;
@@ -627,14 +779,23 @@ async function handleSavePrompt() {
     try {
         dom.saveModal.disabled = true;
         dom.saveModal.textContent = hasNewImage
-            ? "Uploading..."
-            : "Saving...";
+            ? "⏳ Đang tải ảnh lên..."
+            : "⏳ Đang lưu dữ liệu...";
+
+        const oldImageUrl = state.originalPromptSnapshot?.image_url ?? null;
 
         if (state.selectedImage) {
             image_url = await uploadPromptImage(
                 state.selectedImage,
             );
         }
+
+        const shouldDeleteOldImage =
+            Boolean(
+                state.editingId &&
+                oldImageUrl &&
+                oldImageUrl !== image_url,
+            );
 
         const payload = {
             title,
@@ -657,13 +818,32 @@ async function handleSavePrompt() {
         }
 
         if (error) {
-            console.error("Save prompt error:", error);
+            console.error("❌ Lỗi lưu prompt:", error);
             throw new Error(error.message);
+        }
+
+        // Chỉ xóa ảnh cũ sau khi đã lưu database thành công
+        if (shouldDeleteOldImage) {
+            try {
+                await deletePromptImage(oldImageUrl);
+            } catch (storageError) {
+                console.error(
+                    "⚠️ Đã lưu prompt nhưng chưa xóa được ảnh cũ:",
+                    storageError,
+                );
+
+                showToast(
+                    dom.toast,
+                    "⚠️ Đã lưu nhưng chưa xóa được ảnh cũ",
+                );
+            }
         }
 
         showToast(
             dom.toast,
-            state.editingId ? "Saved ✅" : "Created ✅",
+            state.editingId
+                ? "✅ Đã lưu prompt"
+                : "🎉 Đã tạo prompt",
         );
 
         state.selectedImage = null;
@@ -676,7 +856,7 @@ async function handleSavePrompt() {
 
         showToast(
             dom.toast,
-            error.message || "Save failed",
+            error.message || "😫 Lưu thất bại",
         );
     } finally {
         dom.saveModal.disabled = false;
@@ -746,13 +926,13 @@ async function handleCardAction(e) {
         if (state.userPlan === "free") {
             showToast(
                 dom.toast,
-                "Gói Free không hỗ trợ copy. Nâng cấp Pro hoặc ultimate nhé!",
+                "Gói Free không hỗ trợ copy. Nâng cấp Super nhé!",
             );
             return;
         }
         try {
             await copyToClipboard(card.dataset.text || "");
-            showToast(dom.toast, "Copied ✅");
+            showToast(dom.toast, "✅ Copied");
 
             state.copyScore.set(id, (state.copyScore.get(id) || 0) + 1);
             state.lastCopiedAt.set(id, Date.now());
@@ -768,12 +948,12 @@ async function handleCardAction(e) {
                 filterTypeEl: dom.filterType,
             });
         } catch {
-            showToast(dom.toast, "Copy failed");
+            showToast(dom.toast, "❌ Không thể sao chép");
         }
         return;
     }
 
-    if (!state.isAdmin) return showToast(dom.toast, "Only admin");
+    if (!state.isAdmin) return showToast(dom.toast, "👮 Chỉ quản trị viên mới có quyền thực hiện");
 
     if (action === "edit") {
         const prompt = state.prompts.find((p) => p.id === id);
@@ -809,16 +989,66 @@ async function handleCardAction(e) {
     }
 
     if (action === "delete") {
-        if (!confirm("Bạn có chắc chắn muốn xóa? Không thể hoàn tác hành động này.")) return;
+        const confirmed = confirm(
+            "🤔 Bạn có chắc chắn muốn xóa prompt này?\n\nHành động này không thể hoàn tác.",
+        );
+
+        if (!confirmed) return;
+
+        const prompt = state.prompts.find(
+            (item) => String(item.id) === String(id),
+        );
+
+        const oldImageUrl =
+            prompt?.image_url ?? null;
+
         const { error } = await state.supabase
             .from("prompts")
             .delete()
             .eq("id", id);
-        if (!error) {
-            showToast(dom.toast, "Removed ✅");
-            await loadPrompts();
+
+        if (error) {
+            console.error(
+                "❌ Lỗi xóa prompt:",
+                error,
+            );
+
+            showToast(
+                dom.toast,
+                "❌ Không thể xóa prompt",
+            );
+
+            return;
         }
+
+        // Xóa ảnh liên quan sau khi xóa prompt thành công
+        if (oldImageUrl) {
+            try {
+                await deletePromptImage(oldImageUrl);
+            } catch (storageError) {
+                console.error(
+                    "⚠️ Đã xóa prompt nhưng chưa xóa được ảnh:",
+                    storageError,
+                );
+
+                showToast(
+                    dom.toast,
+                    "⚠️ Đã xóa prompt nhưng ảnh cũ vẫn còn",
+                );
+
+                await loadPrompts();
+                return;
+            }
+        }
+
+        showToast(
+            dom.toast,
+            "✅ Đã xóa",
+        );
+
+        await loadPrompts();
     }
+
 }
 
 // ========================= INIT =========================
