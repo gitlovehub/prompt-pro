@@ -665,74 +665,97 @@
 
     <!-- MODAL PAYMENT -->
     <div id="paymentModal" class="hidden fixed inset-0 z-[999] bg-black/70 flex items-end lg:items-center justify-center p-4 overflow-hidden opacity-0 transition-opacity duration-300">
-        <div id="paymentModalBox" class="w-full max-w-[380px] mx-auto bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col opacity-0 translate-y-6 scale-95 transition duration-300">
+        <div id="paymentModalBox" class="w-full max-w-[820px] mx-auto bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl overflow-hidden max-h-[92vh] flex flex-col opacity-0 translate-y-6 scale-95 transition duration-300">
 
-            <!-- Header -->
+            <!-- Header cố định -->
             <div class="px-6 py-4 text-center border-b border-gray-100 dark:border-zinc-800 shrink-0">
                 <h2 class="text-2xl font-bold text-zinc-900 dark:text-white">Thanh toán Super</h2>
                 <p class="text-gray-600 dark:text-gray-400 mt-1 text-sm">Chuyển khoản nhanh</p>
             </div>
 
-            <!-- Nội dung chính - Có scroll nếu cần -->
-            <div class="flex-1 px-6 py-5 space-y-5 overflow-y-auto">
-                <div class="space-y-6">
-                    <div>
-                        <p class="text-xs uppercase tracking-widest text-gray-500 mb-1">Ngân hàng</p>
-                        <p class="font-mono font-medium text-[17px] flex-1 text-zinc-900 dark:text-white">Ngân hàng Tiên Phong (TPBank)</p>
-                    </div>
+            <div class="flex-1 overflow-y-auto">
+                <div class="flex flex-col md:flex-row">
 
-                    <div>
-                        <p class="text-xs uppercase tracking-widest text-gray-500 mb-1">Số tài khoản</p>
-                        <div class="flex items-center bg-gray-100 dark:bg-zinc-800 rounded-2xl p-4">
-                            <p class="font-mono text-xl font-semibold flex-1 text-zinc-900 dark:text-white">78911021102</p>
-                            <button 
-                                type="button"
-                                data-payment-copy="78911021102"
-                                class="px-5 py-2.5 text-sm font-medium bg-white dark:bg-zinc-700 rounded-xl shadow-sm active:scale-95 transition">
-                                Sao chép
-                            </button>
+                    <!-- QR Code -->
+                    <div class="md:w-2/5 bg-gray-50 dark:bg-zinc-950 border-b md:border-b-0 md:border-r border-gray-100 dark:border-zinc-800 flex items-center justify-center p-8">
+                        <div class="text-center">
+                            <img 
+                                src="assets/images/qr/qr_tpbank.jpg" 
+                                alt="QR Thanh toán Super" 
+                                class="w-64 h-64 mx-auto shadow-lg rounded-2xl border border-gray-200 dark:border-zinc-700"
+                            >
+                            <p class="mt-4 text-sm text-gray-500 dark:text-gray-400">Quét mã QR để thanh toán nhanh</p>
                         </div>
                     </div>
 
-                    <div>
-                        <p class="text-xs uppercase tracking-widest text-gray-500 mb-1">Chủ tài khoản</p>
-                        <p class="font-mono text-xl font-semibold flex-1 text-zinc-900 dark:text-white">TRAN DUC HUNG</p>
-                    </div>
+                    <!-- Thông tin chuyển khoản -->
+                    <div class="flex-1 p-6 space-y-6">
+                        <div class="space-y-4">
+                            <div>
+                                <p class="text-xs uppercase tracking-widest text-gray-500 mb-1">Ngân hàng</p>
+                                <p class="font-medium text-[17px] text-zinc-900 dark:text-white">Ngân hàng Tiên Phong (TPBank)</p>
+                            </div>
 
-                    <div>
-                        <p class="text-xs uppercase tracking-widest text-gray-500 mb-1">Nội dung chuyển khoản</p>
-                        <div class="flex items-center bg-gray-100 dark:bg-zinc-800 rounded-2xl p-4">
-                            <p class="font-mono text-xl font-semibold flex-1 text-zinc-900 dark:text-white">super</p>
-                            <button 
-                                type="button"
-                                data-payment-copy="super"
-                                class="px-5 py-2.5 text-sm font-medium bg-white dark:bg-zinc-700 rounded-xl shadow-sm active:scale-95 transition">
-                                Sao chép
-                            </button>
+                            <div>
+                                <p class="text-xs uppercase tracking-widest text-gray-500 mb-1">Số tài khoản</p>
+                                <div class="flex items-center bg-gray-100 dark:bg-zinc-800 rounded-2xl p-4">
+                                    <p class="font-mono text-xl font-semibold flex-1 text-zinc-900 dark:text-white">78911021102</p>
+                                    <button 
+                                        type="button"
+                                        data-payment-copy="78911021102"
+                                        class="px-5 py-2.5 text-sm font-medium bg-white dark:bg-zinc-700 rounded-xl shadow-sm active:scale-95 transition">
+                                        Sao chép
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div>
+                                <p class="text-xs uppercase tracking-widest text-gray-500 mb-1">Tên người nhận</p>
+                                <p class="font-mono text-xl font-semibold text-zinc-900 dark:text-white">TRAN DUC HUNG</p>
+                            </div>
+
+                            <div>
+                                <p class="text-xs uppercase tracking-widest text-gray-500 mb-1">Số tiền</p>
+                                <p class="font-mono text-2xl font-semibold text-emerald-600 dark:text-emerald-400">
+                                    299.000 <span class="text-base text-zinc-500">VND</span>
+                                </p>
+                            </div>
+
+                            <div>
+                                <p class="text-xs uppercase tracking-widest text-gray-500 mb-1">Nội dung chuyển khoản</p>
+                                <div class="flex items-center bg-gray-100 dark:bg-zinc-800 rounded-2xl p-4">
+                                    <p class="font-mono text-xl font-semibold flex-1 text-zinc-900 dark:text-white">super</p>
+                                    <button 
+                                        type="button"
+                                        data-payment-copy="super"
+                                        class="px-5 py-2.5 text-sm font-medium bg-white dark:bg-zinc-700 rounded-xl shadow-sm active:scale-95 transition">
+                                        Sao chép
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
 
-                <!-- Note -->
-                <div class="rounded-2xl border border-amber-200 bg-amber-50 dark:border-white/15 dark:bg-white/10 p-5 text-sm leading-relaxed text-slate-700 dark:text-white/90 backdrop-blur-sm">
-                    <div class="flex items-start gap-3">
-                        <div class="mt-0.5 text-lg text-amber-500 dark:text-amber-300">⚡</div>
-
-                        <div>
-                            <p>
-                                Sau khi chuyển khoản, vui lòng gửi ảnh biên lai qua email
-                                <strong class="font-semibold text-orange-600 dark:text-amber-300">
-                                    hungtd010302@gmail.com
-                                </strong>
-                                để được kích hoạt ngay.
-                            </p>
+                        <!-- Note -->
+                        <div class="rounded-2xl border border-amber-200 bg-amber-50 dark:border-white/15 dark:bg-white/10 p-5 text-sm leading-relaxed text-slate-700 dark:text-white/90">
+                            <div class="flex items-start gap-3">
+                                <div class="mt-0.5 text-lg text-amber-500 dark:text-amber-300">⚡</div>
+                                <div>
+                                    <p>
+                                        Sau khi chuyển khoản, vui lòng gửi ảnh biên lai qua email
+                                        <strong class="font-semibold text-orange-600 dark:text-amber-300">
+                                            hungtd010302@gmail.com
+                                        </strong>
+                                        để được kích hoạt ngay. Trân thành cảm ơn 💖
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Footer - Nút Đóng -->
-            <div class="px-6 pb-6 pt-2 shrink-0 border-t border-gray-100 dark:border-zinc-800">
+            <!-- Footer cố định -->
+            <div class="px-6 pb-6 pt-2 shrink-0 border-t border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-900">
                 <button 
                     type="button"
                     id="closePaymentModal"
