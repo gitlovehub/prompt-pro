@@ -13,6 +13,28 @@ select {
     }
 }
 
+/* Tối ưu modal mobile */
+@media (max-width: 640px) {
+    #modal > div:nth-child(2),
+    #viewModal > div:nth-child(2) {
+        max-height: 92vh !important;
+        margin-top: 0 !important;
+    }
+
+    /* Giảm padding trên mobile */
+    #modal .p-5,
+    #viewModal .p-5 {
+        padding: 1rem !important;
+    }
+
+    /* Ảnh preview nhỏ hơn trên mobile */
+    #modalImagePreviewWrap,
+    #viewImageWrap {
+        width: 180px !important;
+        max-height: 320px !important;
+    }
+}
+
 /* ====================== TOAST ====================== */
 
 #toast-wrapper {
