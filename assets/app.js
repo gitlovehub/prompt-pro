@@ -1122,11 +1122,11 @@ async function handlePaymentCopy(button) {
         button.textContent = "Đã chép ✓";
 
         if (value === "78911021102") {
-            showToast(dom.toast, "✅ Đã sao chép số tài khoản");
+            showToast(dom.toast, "✅ Copied");
         } else if (value.toLowerCase() === "super") {
-            showToast(dom.toast, "✅ Đã sao chép nội dung chuyển khoản");
+            showToast(dom.toast, "✅ Copied");
         } else {
-            showToast(dom.toast, "✅ Đã sao chép");
+            showToast(dom.toast, "✅ Copied");
         }
 
         window.setTimeout(() => {
