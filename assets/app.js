@@ -83,12 +83,16 @@ const dom = {
     loginForm: document.getElementById("loginForm"),
     emailInput: document.getElementById("email"),
     passwordInput: document.getElementById("password"),
-    pricingLink: document.getElementById("pricingLink"),
     modalImage: document.getElementById("modalImage"),
     modalImagePreview: document.getElementById("modalImagePreview"),
     modalImagePreviewWrap: document.getElementById("modalImagePreviewWrap"),
     modalImageEmpty: document.getElementById("modalImageEmpty"),
     btnRemoveImage: document.getElementById("btnRemoveImage"),
+    btnBuySuper: document.getElementById("btnBuySuper"),
+    paymentModal: document.getElementById("paymentModal"),
+    paymentModalBox: document.getElementById("paymentModalBox"),
+    closePaymentModal: document.getElementById("closePaymentModal"),
+    paymentCopyButtons: document.querySelectorAll("[data-payment-copy]"),
 };
 
 // ========================= DATA LAYER =========================
@@ -240,7 +244,6 @@ function resetGuestUI() {
     dom.btnNew.classList.add("hidden");
     dom.pricingSection.classList.remove("hidden");
     dom.searchBar.classList.add("hidden");
-    dom.pricingLink?.classList.add("hidden");
     dom.grid.innerHTML = "";
 }
 
@@ -1051,9 +1054,142 @@ async function handleCardAction(e) {
 
 }
 
+// ========================= PAYMENT MODAL =========================
+function showPaymentModal() {
+    if (!dom.paymentModal) {
+        console.error("Không tìm thấy #paymentModal");
+        return;
+    }
+
+    dom.paymentModal.classList.remove("hidden");
+    document.body.style.overflow = "hidden";
+
+    requestAnimationFrame(() => {
+        dom.paymentModal.classList.remove("opacity-0");
+
+        dom.paymentModalBox?.classList.remove(
+            "opacity-0",
+            "translate-y-6",
+            "scale-95",
+        );
+    });
+}
+
+function hidePaymentModal() {
+    if (!dom.paymentModal) return;
+
+    dom.paymentModal.classList.add("opacity-0");
+
+    dom.paymentModalBox?.classList.add(
+        "opacity-0",
+        "translate-y-6",
+        "scale-95",
+    );
+
+    window.setTimeout(() => {
+        dom.paymentModal.classList.add("hidden");
+        restoreBodyScroll();
+    }, 300);
+}
+
+function restoreBodyScroll() {
+    const hasOpenModal =
+        !dom.loginModal?.classList.contains("hidden") ||
+        !dom.modal?.classList.contains("hidden") ||
+        !dom.viewModal?.classList.contains("hidden") ||
+        !dom.paymentModal?.classList.contains("hidden");
+
+    document.body.style.overflow = hasOpenModal
+        ? "hidden"
+        : "auto";
+}
+
+async function handlePaymentCopy(button) {
+    const value = button.dataset.paymentCopy?.trim();
+
+    if (!value) {
+        showToast(dom.toast, "❌ Không tìm thấy nội dung để sao chép");
+        return;
+    }
+
+    const originalText = button.textContent;
+
+    try {
+        button.disabled = true;
+
+        await copyToClipboard(value);
+
+        button.textContent = "Đã chép ✓";
+
+        if (value === "78911021102") {
+            showToast(dom.toast, "✅ Đã sao chép số tài khoản");
+        } else if (value.toLowerCase() === "super") {
+            showToast(dom.toast, "✅ Đã sao chép nội dung chuyển khoản");
+        } else {
+            showToast(dom.toast, "✅ Đã sao chép");
+        }
+
+        window.setTimeout(() => {
+            button.textContent = originalText;
+            button.disabled = false;
+        }, 1500);
+    } catch (error) {
+        console.error("Payment copy error:", error);
+
+        button.textContent = originalText;
+        button.disabled = false;
+
+        showToast(dom.toast, "❌ Không thể sao chép");
+    }
+}
+
+function setupPaymentModal() {
+    dom.btnBuySuper?.addEventListener(
+        "click",
+        showPaymentModal,
+    );
+
+    dom.closePaymentModal?.addEventListener(
+        "click",
+        hidePaymentModal,
+    );
+
+    dom.paymentCopyButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+            handlePaymentCopy(button);
+        });
+    });
+
+    // Bấm vào vùng nền tối để đóng
+    dom.paymentModal?.addEventListener("click", (event) => {
+        if (event.target === dom.paymentModal) {
+            hidePaymentModal();
+        }
+    });
+
+    // Ngăn click bên trong hộp làm đóng modal
+    dom.paymentModalBox?.addEventListener("click", (event) => {
+        event.stopPropagation();
+    });
+
+    // Đóng bằng phím Escape
+    document.addEventListener("keydown", (event) => {
+        if (event.key !== "Escape") return;
+
+        if (
+            dom.paymentModal &&
+            !dom.paymentModal.classList.contains("hidden")
+        ) {
+            hidePaymentModal();
+        }
+    });
+}
+
 // ========================= INIT =========================
 async function init() {
     setupEventListeners();
+    setupPaymentModal();
+
     await refreshAuthUI();
 
     state.supabase.auth.onAuthStateChange((event) => {
