@@ -20,13 +20,13 @@ import {
     closeModal,
 } from "./ui.js";
 
-// ========================= CONFIG =========================
+// ======================== CONFIG ========================
 const CONFIG = {
     SUPABASE_URL: "https://nwzoeapjzsugdtohcfyx.supabase.co",
     SUPABASE_ANON_KEY: "sb_publishable_TsL3PRhhpmnVjme70W7wwg_cC4lWs8K",
 };
 
-// ========================= STATE =========================
+// ======================== STATE ========================
 const state = {
     supabase: createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY),
     user: null,
@@ -43,8 +43,10 @@ const state = {
     removeImage: false,
 };
 
-// ========================= DOM CACHE =========================
+// ======================== DOM CACHE ========================
 const dom = {
+    appLoader: document.getElementById("appLoader"),
+    appContent: document.getElementById("appContent"),
     grid: document.getElementById("grid"),
     emptyState: document.getElementById("emptyState"),
     toast: document.getElementById("toast"),
@@ -95,7 +97,7 @@ const dom = {
     paymentCopyButtons: document.querySelectorAll("[data-payment-copy]"),
 };
 
-// ========================= DATA LAYER =========================
+// ======================== DATA LAYER ========================
 async function loadPrompts() {
     let query;
 
@@ -110,9 +112,17 @@ async function loadPrompts() {
     else {
         state.prompts = [];
         state.defaultPrompts = [];
+
         dom.searchBar.classList.add("hidden");
-        dom.pricingSection.classList.remove("hidden");
-        renderPrompts({ gridEl: dom.grid, emptyStateEl: dom.emptyState, list: [], isAdmin: false });
+        dom.pricingSection.classList.add("hidden");
+
+        renderPrompts({
+            gridEl: dom.grid,
+            emptyStateEl: dom.emptyState,
+            list: [],
+            isAdmin: false,
+        });
+
         return;
     }
 
@@ -206,7 +216,7 @@ function getSortedPrompts() {
     });
 }
 
-// ========================= AUTH LAYER =========================
+// ======================== AUTH LAYER ========================
 async function refreshAuthUI() {
     if (state.authRefreshing) return;
     state.authRefreshing = true;
@@ -257,31 +267,58 @@ async function handleLoggedInUser() {
         .eq("id", state.user.id)
         .maybeSingle();
 
-    // ---- SET STATE TRƯỚC ----
     if (error || !profile) {
         state.userPlan = "free";
         state.isAdmin = false;
-        showToast(dom.toast, "⚠️ Không tìm thấy thông tin tài khoản, đang sử dụng gói Free");
+
+        showToast(
+            dom.toast,
+            "⚠️ Không tìm thấy thông tin tài khoản, đang sử dụng gói Free",
+        );
     } else {
-        state.userPlan = profile.plan || "free";
-        state.isAdmin = profile.role === "admin";
+        state.userPlan = String(
+            profile.plan || "free",
+        ).trim().toLowerCase();
+
+        state.isAdmin =
+            String(profile.role || "user")
+                .trim()
+                .toLowerCase() === "admin";
     }
 
-    // ---- ADMIN UI ----
-    dom.btnNew.classList.toggle("hidden", !state.isAdmin);
+    // Chỉ admin mới thấy nút thêm prompt
+    dom.btnNew.classList.toggle(
+        "hidden",
+        !state.isAdmin,
+    );
 
-    if (state.userPlan === "free") {
-        dom.pricingSection.classList.remove("hidden");
-        dom.grid.innerHTML = "";
+    // User thường + gói Free:
+    // ẩn pricing, không load prompt, chỉ hiện "Không có gì."
+    if (!state.isAdmin && state.userPlan === "free") {
+        state.prompts = [];
+        state.defaultPrompts = [];
+
+        dom.pricingSection.classList.add("hidden");
+        dom.searchBar.classList.add("hidden");
+
+        renderPrompts({
+            gridEl: dom.grid,
+            emptyStateEl: dom.emptyState,
+            list: [],
+            isAdmin: false,
+        });
+
         return;
     }
 
+    // Admin hoặc user Super được xem prompt
     dom.searchBar.classList.remove("hidden");
     dom.pricingSection.classList.add("hidden");
+
     await loadPrompts();
 }
 
-// ========================= UI EVENT HANDLERS =========================
+// ======================== UI EVENT HANDLERS ========================
 function setupEventListeners() {
     // Login
     dom.btnShowLogin.addEventListener("click", showLoginModal);
@@ -933,6 +970,7 @@ async function handleCardAction(e) {
             );
             return;
         }
+
         try {
             await copyToClipboard(card.dataset.text || "");
             showToast(dom.toast, "✅ Copied");
@@ -959,7 +997,9 @@ async function handleCardAction(e) {
     if (!state.isAdmin) return showToast(dom.toast, "👮 Chỉ quản trị viên mới có quyền thực hiện");
 
     if (action === "edit") {
-        const prompt = state.prompts.find((p) => p.id === id);
+        const prompt = state.prompts.find(
+            (item) => String(item.id) === String(id),
+        );
         if (!prompt) return;
 
         state.editingId = id;
@@ -1054,7 +1094,7 @@ async function handleCardAction(e) {
 
 }
 
-// ========================= PAYMENT MODAL =========================
+// ======================== PAYMENT MODAL ========================
 function showPaymentModal() {
     if (!dom.paymentModal) {
         console.error("Không tìm thấy #paymentModal");
@@ -1185,16 +1225,47 @@ function setupPaymentModal() {
     });
 }
 
-// ========================= INIT =========================
+function showAppLoader() {
+    dom.appLoader?.classList.remove("hidden");
+    dom.appContent?.classList.add("hidden");
+
+    document.body.style.overflow = "hidden";
+}
+
+function hideAppLoader() {
+    dom.appLoader?.classList.add("hidden");
+    dom.appContent?.classList.remove("hidden");
+
+    restoreBodyScroll();
+}
+
+// ======================== INIT ========================
 async function init() {
-    setupEventListeners();
-    setupPaymentModal();
+    showAppLoader();
 
-    await refreshAuthUI();
+    try {
+        setupEventListeners();
+        setupPaymentModal();
 
-    state.supabase.auth.onAuthStateChange((event) => {
-        if (["SIGNED_IN", "SIGNED_OUT"].includes(event)) refreshAuthUI();
-    });
+        await refreshAuthUI();
+
+        state.supabase.auth.onAuthStateChange((event) => {
+            if (
+                ["SIGNED_IN", "SIGNED_OUT", "USER_UPDATED"].includes(event)
+            ) {
+                refreshAuthUI();
+            }
+        });
+    } catch (error) {
+        console.error("Init error:", error);
+
+        showToast(
+            dom.toast,
+            "⚠️ Không thể khởi tạo ứng dụng",
+        );
+    } finally {
+        hideAppLoader();
+    }
 }
 
 init();
