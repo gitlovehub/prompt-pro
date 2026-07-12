@@ -160,7 +160,7 @@ export function renderPrompts({
                             <button
                                 type="button"
                                 data-action="view"
-                                class="flex w-full items-center gap-2 bg-white p-2 sm:px-4 sm:py-2.5 text-left text-sm font-semibold text-slate-700 transition hover:bg-slate-200 hover:text-slate-950">
+                                class="flex w-full items-center gap-2 bg-white ps-3 py-2 pe-2 sm:px-4 sm:py-2.5 text-left text-sm font-semibold text-slate-700 transition hover:bg-slate-200 hover:text-slate-950">
                                 <span>
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                         <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
@@ -177,7 +177,7 @@ export function renderPrompts({
                                         <button
                                             type="button"
                                             data-action="edit"
-                                            class="flex w-full items-center gap-2 bg-white p-2 sm:px-4 sm:py-2.5 text-left text-sm font-semibold text-slate-700 transition hover:bg-indigo-200 hover:text-indigo-700">
+                                            class="flex w-full items-center gap-2 bg-white ps-3 py-2 pe-2 sm:px-4 sm:py-2.5 text-left text-sm font-semibold text-slate-700 transition hover:bg-indigo-200 hover:text-indigo-700">
                                             <span>
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
                                                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -190,7 +190,7 @@ export function renderPrompts({
                                         <button
                                             type="button"
                                             data-action="delete"
-                                            class="flex w-full items-center gap-2 bg-white p-2 sm:px-4 sm:py-2.5 text-left text-sm font-semibold text-slate-700 transition-colors hover:bg-red-200 hover:text-red-600">
+                                            class="flex w-full items-center gap-2 bg-white ps-3 py-2 pe-2 sm:px-4 sm:py-2.5 text-left text-sm font-semibold text-slate-700 transition-colors hover:bg-red-200 hover:text-red-600">
                                             <span>
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
                                                     <path d="M3 6h18"/>
