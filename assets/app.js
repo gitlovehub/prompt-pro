@@ -489,7 +489,7 @@ async function handleLogin() {
 
 async function handleLogout() {
     await state.supabase.auth.signOut();
-    showToast(dom.toast, "👋 Đã đăng xuất");
+    showToast(dom.toast, "🏃🚪 Đã đăng xuất");
     
     if (dom.emailInput) dom.emailInput.value = "";
     if (dom.passwordInput) dom.passwordInput.value = "";
