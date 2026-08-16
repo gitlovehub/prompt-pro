@@ -150,7 +150,7 @@ export function renderPrompts({
                             <button
                                 type="button"
                                 data-action="view"
-                                class="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left text-sm font-medium text-slate-700 transition hover:bg-blue-100 hover:text-blue-700"
+                                class="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-700"
                             >
                                 <svg class="h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <rect x="3" y="3" width="18" height="18" rx="2"/>
@@ -166,7 +166,7 @@ export function renderPrompts({
                                         <button
                                             type="button"
                                             data-action="edit"
-                                            class="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left text-sm font-medium text-slate-700 transition hover:bg-amber-100 hover:text-amber-600"
+                                            class="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-700"
                                         >
                                             <svg class="h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -178,7 +178,7 @@ export function renderPrompts({
                                         <button
                                             type="button"
                                             data-action="delete"
-                                            class="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left text-sm font-medium text-slate-700 transition hover:bg-red-100 hover:text-red-600"
+                                            class="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left text-sm font-medium text-slate-600 transition hover:bg-red-100 hover:text-red-600"
                                         >
                                             <svg class="h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                 <path d="M3 6h18"/>
