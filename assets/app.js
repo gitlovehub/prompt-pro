@@ -973,7 +973,7 @@ async function handleCardAction(e) {
 
         try {
             await copyToClipboard(card.dataset.text || "");
-            showToast(dom.toast, "✅ Copied");
+            showToast(dom.toast, "Copied");
 
             state.copyScore.set(id, (state.copyScore.get(id) || 0) + 1);
             state.lastCopiedAt.set(id, Date.now());
@@ -1159,14 +1159,14 @@ async function handlePaymentCopy(button) {
 
         await copyToClipboard(value);
 
-        button.textContent = "Đã chép ✓";
+        button.textContent = "Đã sao chép";
 
         if (value === "78911021102") {
-            showToast(dom.toast, "✅ Copied");
+            showToast(dom.toast, "Copied");
         } else if (value.toLowerCase() === "super") {
-            showToast(dom.toast, "✅ Copied");
+            showToast(dom.toast, "Copied");
         } else {
-            showToast(dom.toast, "✅ Copied");
+            showToast(dom.toast, "Copied");
         }
 
         window.setTimeout(() => {
