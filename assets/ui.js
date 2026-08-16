@@ -106,68 +106,57 @@ export function renderPrompts({
                     <img
                         src="${escapeHtml(p.image_url)}"
                         alt="${escapeHtml(p.title || "Prompt image")}"
-                        class="absolute inset-0 h-full w-full object-cover"
+                        class="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                         loading="lazy"
                     />
                 `
                 : `
-                    <div
-                        class="absolute inset-0 flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-100 via-slate-200 to-slate-400 text-sm font-semibold text-slate-500">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="stroke-[2] absolute top-20"><path fill-rule="evenodd" clip-rule="evenodd" d="M14.0996 2.5C15.2032 2.5 16.0914 2.49903 16.8086 2.55762C17.5373 2.61716 18.1773 2.74327 18.7695 3.04492C19.7103 3.52429 20.4757 4.28966 20.9551 5.23047C21.2567 5.82266 21.3828 6.4627 21.4424 7.19141C21.501 7.90857 21.5 8.79681 21.5 9.90039V14.0996C21.5 15.2032 21.501 16.0914 21.4424 16.8086C21.3828 17.5373 21.2567 18.1773 20.9551 18.7695C20.4757 19.7103 19.7103 20.4757 18.7695 20.9551C18.1773 21.2567 17.5373 21.3828 16.8086 21.4424C16.0914 21.501 15.2032 21.5 14.0996 21.5H9.90039C8.79681 21.5 7.90857 21.501 7.19141 21.4424C6.4627 21.3828 5.82266 21.2567 5.23047 20.9551C4.28966 20.4757 3.52429 19.7103 3.04492 18.7695C2.74327 18.1773 2.61716 17.5373 2.55762 16.8086C2.49903 16.0914 2.5 15.2032 2.5 14.0996V9.90039C2.5 8.79681 2.49903 7.90857 2.55762 7.19141C2.61716 6.4627 2.74327 5.82266 3.04492 5.23047C3.52429 4.28966 4.28966 3.52429 5.23047 3.04492C5.82266 2.74327 6.4627 2.61716 7.19141 2.55762C7.90857 2.49903 8.79681 2.5 9.90039 2.5H14.0996ZM4.50586 14.4424C4.51159 14.915 4.52312 16.3068 4.55078 16.6455C4.60023 17.2507 4.69296 17.599 4.82715 17.8623C5.11472 18.4265 5.57347 18.8853 6.1377 19.1729C6.40105 19.307 6.74933 19.3998 7.35449 19.4492C7.97129 19.4996 8.76396 19.5 9.90039 19.5H14.0996C14.4595 19.5 15.7848 19.4968 16.0811 19.4951L7.95899 11.373L4.50586 14.4424ZM15 7C13.8954 7 13 7.89543 13 9C13 10.1046 13.8954 11 15 11C16.1046 11 17 10.1046 17 9C17 7.89543 16.1046 7 15 7Z" fill="currentColor"></path></svg>
+                    <div class="absolute inset-0 flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-100 via-slate-200 to-slate-300">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" class="text-slate-400">
+                            <path fill-rule="evenodd" clip-rule="evenodd" d="M14.0996 2.5C15.2032 2.5 16.0914 2.49903 16.8086 2.55762C17.5373 2.61716 18.1773 2.74327 18.7695 3.04492C19.7103 3.52429 20.4757 4.28966 20.9551 5.23047C21.2567 5.82266 21.3828 6.4627 21.4424 7.19141C21.501 7.90857 21.5 8.79681 21.5 9.90039V14.0996C21.5 15.2032 21.501 16.0914 21.4424 16.8086C21.3828 17.5373 21.2567 18.1773 20.9551 18.7695C20.4757 19.7103 19.7103 20.4757 18.7695 20.9551C18.1773 21.2567 17.5373 21.3828 16.8086 21.4424C16.0914 21.501 15.2032 21.5 14.0996 21.5H9.90039C8.79681 21.5 7.90857 21.501 7.19141 21.4424C6.4627 21.3828 5.82266 21.2567 5.23047 20.9551C4.28966 20.4757 3.52429 19.7103 3.04492 18.7695C2.74327 18.1773 2.61716 17.5373 2.55762 16.8086C2.49903 16.0914 2.5 15.2032 2.5 14.0996V9.90039C2.5 8.79681 2.49903 7.90857 2.55762 7.19141C2.61716 6.4627 2.74327 5.82266 3.04492 5.23047C3.52429 4.28966 4.28966 3.52429 5.23047 3.04492C5.82266 2.74327 6.4627 2.61716 7.19141 2.55762C7.90857 2.49903 8.79681 2.5 9.90039 2.5H14.0996ZM4.50586 14.4424C4.51159 14.915 4.52312 16.3068 4.55078 16.6455C4.60023 17.2507 4.69296 17.599 4.82715 17.8623C5.11472 18.4265 5.57347 18.8853 6.1377 19.1729C6.40105 19.307 6.74933 19.3998 7.35449 19.4492C7.97129 19.4996 8.76396 19.5 9.90039 19.5H14.0996C14.4595 19.5 15.7848 19.4968 16.0811 19.4951L7.95899 11.373L4.50586 14.4424ZM15 7C13.8954 7 13 7.89543 13 9C13 10.1046 13.8954 11 15 11C16.1046 11 17 10.1046 17 9C17 7.89543 16.1046 7 15 7Z" fill="currentColor"></path>
+                        </svg>
                     </div>
                 `;
 
             return `
                 <article
-                    class="prompt-card group relative h-[300px] overflow-hidden rounded-[20px] border border-white/60 bg-slate-200 shadow-lg transition-all duration-300 sm:h-[360px] sm:rounded-[24px] md:h-[420px] md:rounded-[28px] md:hover:shadow-2xl"
+                    class="prompt-card group relative h-[300px] overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1 sm:h-[360px] md:h-[420px]"
                     data-id="${escapeHtml(p.id)}"
                     data-type="${escapeHtml(p.type || "image")}"
                     data-title="${escapeHtml(p.title || "")}"
                     data-text="${escapeHtml(p.prompt_text || "")}"
                     data-image="${escapeHtml(p.image_url || "")}"
                 >
-
-                    <!-- ẢNH PHỦ TOÀN BỘ CARD -->
+                    <!-- ẢNH NỀN -->
                     ${backgroundMedia}
 
-                    <!-- LỚP TỐI NHẸ GIÚP PHẦN CHỮ DỄ ĐỌC -->
-                    <div
-                        class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-black/5">
-                    </div>
+                    <!-- GRADIENT TỐI NHẸ -->
+                    <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent"></div>
 
                     <!-- MENU 3 CHẤM -->
-                    <div class="card-menu-wrap absolute right-2 top-2 sm:right-3 sm:top-3 md:right-4 md:top-4 z-30">
-
+                    <div class="card-menu-wrap absolute right-2.5 top-2.5 z-30 sm:right-3 sm:top-3">
                         <button
                             type="button"
                             data-action="menu"
                             aria-label="Mở menu"
-                            class="flex h-8 w-8 items-center justify-center rounded-full border border-white/40 bg-black/35 text-2xl leading-none shadow-lg backdrop-blur-sm transition hover:bg-black/60">
-                            <svg
-                                class="pointer-events-none h-5 w-5 text-slate-200"
-                                viewBox="0 0 20 20"
-                                fill="currentColor">
-
-                                <path
-                                    d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"
-                                />
+                            class="flex h-8 w-8 items-center justify-center rounded-full border border-white/30 bg-black/40 text-white shadow-lg backdrop-blur-md transition hover:bg-black/60 hover:scale-105"
+                        >
+                            <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"/>
                             </svg>
                         </button>
 
-                        <div
-                            class="card-menu absolute right-0 top-[40px] hidden w-24 sm:w-32 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
-
+                        <div class="card-menu absolute right-0 top-10 hidden w-28 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl sm:w-32">
                             <button
                                 type="button"
                                 data-action="view"
-                                class="flex w-full items-center gap-2 bg-white ps-3 py-2 pe-2 sm:px-4 sm:py-2.5 text-left text-sm font-semibold text-slate-700 transition hover:bg-slate-200 hover:text-slate-950">
-                                <span>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                                        <circle cx="8.5" cy="8.5" r="1.5"/>
-                                        <polyline points="21 15 16 10 5 21"/>
-                                    </svg>
-                                </span>
+                                class="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left text-sm font-medium text-slate-700 transition hover:bg-blue-100 hover:text-blue-700"
+                            >
+                                <svg class="h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                                    <polyline points="21 15 16 10 5 21"/>
+                                </svg>
                                 <span>Xem</span>
                             </button>
 
@@ -177,29 +166,27 @@ export function renderPrompts({
                                         <button
                                             type="button"
                                             data-action="edit"
-                                            class="flex w-full items-center gap-2 bg-white ps-3 py-2 pe-2 sm:px-4 sm:py-2.5 text-left text-sm font-semibold text-slate-700 transition hover:bg-indigo-200 hover:text-indigo-700">
-                                            <span>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
-                                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                                                </svg>
-                                            </span>
+                                            class="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left text-sm font-medium text-slate-700 transition hover:bg-amber-100 hover:text-amber-600"
+                                        >
+                                            <svg class="h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                            </svg>
                                             <span>Sửa</span>
                                         </button>
 
                                         <button
                                             type="button"
                                             data-action="delete"
-                                            class="flex w-full items-center gap-2 bg-white ps-3 py-2 pe-2 sm:px-4 sm:py-2.5 text-left text-sm font-semibold text-slate-700 transition-colors hover:bg-red-200 hover:text-red-600">
-                                            <span>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
-                                                    <path d="M3 6h18"/>
-                                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
-                                                    <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                                                    <line x1="10" y1="11" x2="10" y2="17"/>
-                                                    <line x1="14" y1="11" x2="14" y2="17"/>
-                                                </svg>
-                                            </span>
+                                            class="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left text-sm font-medium text-slate-700 transition hover:bg-red-100 hover:text-red-600"
+                                        >
+                                            <svg class="h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M3 6h18"/>
+                                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
+                                                <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                                <line x1="10" y1="11" x2="10" y2="17"/>
+                                                <line x1="14" y1="11" x2="14" y2="17"/>
+                                            </svg>
                                             <span>Xóa</span>
                                         </button>
                                     `
@@ -208,56 +195,62 @@ export function renderPrompts({
                         </div>
                     </div>
 
-                    <!-- KHỐI NỘI DUNG BLUR -->
-                    <div
-                        class="absolute inset-x-0 bottom-0 z-20 border border-white/25 bg-black/10 p-3 sm:p-4 md:p-5 text-white shadow-2xl backdrop-blur-sm">
+                    <!-- NỘI DUNG DƯỚI -->
+                    <div class="absolute inset-x-0 bottom-0 z-20">
+                        <div class="border border-white/20 bg-black/30 p-3.5 backdrop-blur-md sm:p-4">
+                            
+                            <!-- TIÊU ĐỀ -->
+                            <h3
+                                data-field="title"
+                                data-raw="${escapeHtml(p.title || "Untitled")}"
+                                class="line-clamp-1 text-sm font-bold text-white sm:text-[15px]"
+                            >
+                                ${escapeHtml(p.title || "Untitled")}
+                            </h3>
 
-                        <!-- TÊN PROMPT -->
-                        <h3
-                            data-field="title"
-                            data-raw="${escapeHtml(p.title || "Untitled")}"
-                            class="line-clamp-2 text-xs font-extrabold text-white sm:text-sm truncate">
-                            ${escapeHtml(p.title || "Untitled")}
-                        </h3>
+                            <!-- PREVIEW TEXT -->
+                            <p
+                                data-field="text"
+                                data-raw="${escapeHtml(previewRaw)}"
+                                class="mt-1.5 line-clamp-2 text-xs leading-relaxed text-white/75 sm:text-[13px]"
+                            >
+                                ${escapeHtml(previewRaw)}
+                            </p>
 
-                        <!-- NỘI DUNG 2 DÒNG -->
-                        <p
-                            data-field="text"
-                            data-raw="${escapeHtml(previewRaw)}"
-                            class="mt-1 line-clamp-2 text-sm text-white/80">
-                            ${escapeHtml(previewRaw)}
-                        </p>
+                            <!-- META + TAG -->
+                            <div class="mt-3 flex items-center justify-between gap-2">
+                                <span class="truncate text-[11px] font-medium text-white/55">
+                                    ${updated || "Chưa cập nhật"}
+                                </span>
 
-                        <!-- THỜI GIAN + TAG -->
-                        <div class="my-2 flex items-center justify-between gap-3">
+                                ${
+                                    (p.type || "image").toLowerCase() === "motion"
+                                        ? `
+                                            <span class="inline-flex items-center rounded-full bg-amber-400/25 px-2.5 py-0.5 text-[10px] font-bold tracking-wide text-amber-100 ring-1 ring-amber-300/40">
+                                                MOTION
+                                            </span>
+                                        `
+                                        : `
+                                            <span class="inline-flex items-center rounded-full bg-emerald-400/25 px-2.5 py-0.5 text-[10px] font-bold tracking-wide text-emerald-100 ring-1 ring-emerald-300/40">
+                                                IMAGE
+                                            </span>
+                                        `
+                                }
+                            </div>
 
-                            <span class="truncate text-xs font-medium text-white/65">
-                                ${updated || "Chưa cập nhật"}
-                            </span>
-
-                            ${
-                                (p.type || "image").toLowerCase() === "motion"
-                                    ? `
-                                        <span class="inline-flex items-center rounded-full border border-amber-300/50 bg-amber-400/20 px-2 py-0.5 text-[9px] sm:px-3 sm:py-1 sm:text-[11px] font-bold text-amber-100 backdrop-blur-md">
-                                            MOTION
-                                        </span>
-                                    `
-                                    : `
-                                        <span class="inline-flex items-center rounded-full border border-emerald-300/50 bg-emerald-400/20 px-2 py-0.5 text-[9px] sm:px-3 sm:py-1 sm:text-[11px] font-bold text-emerald-100 backdrop-blur-md">
-                                            IMAGE
-                                        </span>
-                                    `
-                            }
+                            <!-- NÚT COPY -->
+                            <button
+                                type="button"
+                                data-action="copy"
+                                class="group mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-white/85 py-2.5 text-xs font-semibold text-slate-800 shadow-sm ring-1 ring-white/40 transition-all duration-200 hover:bg-white hover:shadow-md hover:ring-white/60 active:scale-[0.97] sm:py-3 sm:text-sm"
+                            >
+                                <svg class="h-3.5 w-3.5 text-slate-500 transition group-hover:text-slate-700 sm:h-4 sm:w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                                <span>Copy Prompt</span>
+                            </button>
                         </div>
-
-                        <!-- NÚT COPY -->
-                        <button
-                            type="button"
-                            data-action="copy"
-                            class="w-full rounded-xl bg-white px-2 py-2 text-xs font-extrabold text-slate-950 shadow-lg transition hover:bg-slate-100 active:scale-[0.98] sm:mt-1 sm:rounded-2xl sm:px-4 sm:py-3 sm:text-sm md:text-base">
-                            Copy
-                        </button>
-
                     </div>
                 </article>
             `;
