@@ -203,7 +203,7 @@ export function renderPrompts({
                             <h3
                                 data-field="title"
                                 data-raw="${escapeHtml(p.title || "Untitled")}"
-                                class="line-clamp-1 text-sm font-bold text-white sm:text-[15px]"
+                                class="line-clamp-1 text-sm font-bold text-white uppercase sm:text-[15px]"
                             >
                                 ${escapeHtml(p.title || "Untitled")}
                             </h3>
