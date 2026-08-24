@@ -440,22 +440,6 @@ function setupEventListeners() {
                 "false",
             );
 
-            dom.filterItems.forEach((button) => {
-                button.classList.remove(
-                    "bg-blue-50",
-                    "text-blue-700",
-                );
-
-                button.classList.add("text-slate-700");
-            });
-
-            item.classList.remove("text-slate-700");
-
-            item.classList.add(
-                "bg-blue-50",
-                "text-blue-700",
-            );
-
             // Render lại đúng thứ tự
             renderPrompts({
                 gridEl: dom.grid,
